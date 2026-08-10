@@ -1,0 +1,1128 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tennis Social Game Draws</title>
+  <style>
+    :root {
+      --bg: #FFFFFF;
+      --surface: #FFFFFF;
+      --surface-alt: #EAF3EC;
+      --ink: #0B4228;
+      --ink-muted: #4B7561;
+      --line: #CFE0D3;
+      --line-strong: #8FB89D;
+      --accent: #1C7C4C;
+      --accent-ink: #FFFFFF;
+      --bye: #6B8578;
+      --bye-bg: #EAF3EC;
+      --danger: #A13B3B;
+      --shadow: 0 1px 2px rgba(11, 66, 40, 0.06), 0 4px 10px rgba(11, 66, 40, 0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      padding: 32px 24px 64px;
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    header.top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+
+    h1 {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      margin: 0;
+      text-wrap: balance;
+    }
+
+    .subnote {
+      color: var(--ink-muted);
+      font-size: 13px;
+      margin: 4px 0 20px;
+      max-width: 65ch;
+    }
+
+    .unlock-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-top: 28px;
+    }
+
+    .unlock-bar input[type="password"],
+    .unlock-bar input[type="text"] {
+      font: inherit;
+      font-size: 14px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      background: var(--bg);
+      color: var(--ink);
+      width: 110px;
+    }
+
+    button {
+      font: inherit;
+      font-weight: 700;
+      font-size: 13px;
+      border: none;
+      border-radius: 7px;
+      padding: 7px 14px;
+      cursor: pointer;
+      background: var(--accent);
+      color: var(--accent-ink);
+    }
+
+    button.ghost {
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--ink);
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    .tab:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .status-pill {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: var(--surface-alt);
+      color: var(--ink-muted);
+    }
+
+    .status-pill.on {
+      color: var(--accent-ink);
+      background: var(--accent);
+    }
+
+    .unlock-error {
+      color: var(--danger);
+      font-size: 12.5px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .tab {
+      appearance: none;
+      background: none;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      font: inherit;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 0.01em;
+      color: var(--ink-muted);
+      padding: 8px 16px;
+      cursor: pointer;
+    }
+
+    .tab+.tab {
+      margin-left: 8px;
+    }
+
+    .tab[aria-selected="true"] {
+      color: var(--accent-ink);
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    section.panel {
+      display: none;
+    }
+
+    section.panel[data-active="true"] {
+      display: block;
+    }
+
+    .bracket-scroll {
+      overflow-x: auto;
+      padding: 20px 0 8px;
+      margin-top: 14px;
+    }
+
+    .bracket-wrap {
+      position: relative;
+    }
+
+    .bracket-wrap svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+    }
+
+    .col-label {
+      position: absolute;
+      top: 4px;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--ink-muted);
+    }
+
+    .slot {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      border-radius: 8px;
+      padding: 0 12px;
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .slot .name {
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .game-tag {
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-variant-numeric: tabular-nums;
+      font-size: 10px;
+      color: var(--ink-muted);
+      background: var(--surface-alt);
+      border-radius: 5px;
+      padding: 2px 5px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .slot.tbd {
+      color: var(--ink-muted);
+      font-style: italic;
+      border-style: dashed;
+      justify-content: center;
+    }
+
+    .slot.bye {
+      color: var(--bye);
+      background: var(--bye-bg);
+      border-color: transparent;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .slot.winner {
+      border-color: var(--accent);
+      box-shadow: inset 0 0 0 1px var(--accent);
+      font-weight: 800;
+    }
+
+    .slot.champion {
+      border: 1.5px solid var(--accent);
+      background: var(--surface-alt);
+      font-weight: 800;
+      justify-content: center;
+      color: var(--ink-muted);
+    }
+
+    .slot.champion.decided {
+      background: var(--accent);
+      color: var(--accent-ink);
+    }
+
+    .slot.champion.celebrate {
+      animation: champion-pop 0.6s ease;
+    }
+
+    @keyframes champion-pop {
+      0% {
+        transform: scale(1);
+      }
+
+      35% {
+        transform: scale(1.14);
+      }
+
+      65% {
+        transform: scale(0.96);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .slot.pickable {
+      cursor: pointer;
+    }
+
+    .slot.pickable:hover {
+      background: var(--surface-alt);
+    }
+
+    .clear-btn {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink-muted);
+      font-size: 11px;
+      line-height: 1;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .bracket-wrap line {
+      stroke: var(--line-strong);
+      stroke-width: 1.5;
+    }
+
+    .rr-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin-top: 20px;
+      max-width: 480px;
+    }
+
+    .rr-title {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--ink-muted);
+      margin: 0 0 12px;
+    }
+
+    .rr-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 14px;
+    }
+
+    .rr-row:last-of-type {
+      border-bottom: none;
+    }
+
+    .rr-team {
+      flex: 1 1 auto;
+      font-weight: 600;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .rr-team:last-child {
+      text-align: right;
+    }
+
+    .rr-score,
+    .rr-score-view {
+      width: 40px;
+      flex: 0 0 auto;
+      text-align: center;
+      font: inherit;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .rr-score {
+      padding: 4px 2px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--ink);
+    }
+
+    .rr-score-view {
+      color: var(--ink-muted);
+    }
+
+    .rr-dash {
+      color: var(--ink-muted);
+      flex: 0 0 auto;
+    }
+
+    .rr-standings {
+      width: 100%;
+      margin-top: 14px;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .rr-standings th,
+    .rr-standings td {
+      text-align: left;
+      padding: 6px 8px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .rr-standings th:not(:nth-child(2)),
+    .rr-standings td:not(:nth-child(2)) {
+      text-align: center;
+    }
+
+    .rr-standings thead th {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--ink-muted);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .rr-standings tr.advancing {
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .rr-standings tr.advancing td:nth-child(2)::after {
+      content: " →";
+      color: var(--accent);
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      section.panel[data-active="true"] {
+        animation: fade 0.15s ease-out;
+      }
+    }
+
+    @keyframes fade {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="page">
+    <header class="top">
+      <h1>Tennis Social Game Draws</h1>
+    </header>
+
+    <div class="tabs" role="tablist" aria-label="Bracket selector">
+      <button class="tab" role="tab" id="tab-doubles" aria-controls="panel-doubles" aria-selected="true">Doubles · 6
+        teams</button>
+      <button class="tab" role="tab" id="tab-singles" aria-controls="panel-singles" aria-selected="false">Singles · 10
+        players</button>
+    </div>
+
+    <section class="panel" id="panel-doubles" role="tabpanel" aria-labelledby="tab-doubles" data-active="true">
+      <p class="subnote">Rounds 1 and 2 will both be played as 7-point tie breaks.</p>
+      <p class="subnote">In Round 1, it's single elimination, so if you lose, you're out.</p>
+      <p class="subnote">Round 2 will be a round robin with 3 teams. Each team will play the other two teams
+        once, and the top 2 teams will advance to the Final. Rankings will be based on total wins. If two or
+        more teams are tied on wins, the team that has lost fewest points overall will rank higher.</p>
+      <p class="subnote">The Final will be played as a full set, with the first team to 6 games winning. If
+        the score reaches 6–6, a 7-point tie break will decide the match.</p>
+      <div class="bracket-scroll">
+        <div id="bracket-doubles" class="bracket-wrap"></div>
+      </div>
+      <div id="doubles-stage2"></div>
+    </section>
+
+    <section class="panel" id="panel-singles" role="tabpanel" aria-labelledby="tab-singles">
+      <p class="subnote">One Point Slam</p>
+      <div class="bracket-scroll">
+        <div id="bracket-singles" class="bracket-wrap"></div>
+      </div>
+    </section>
+
+    <div class="unlock-bar">
+      <span class="status-pill" id="status-pill">Viewing only</span>
+      <input type="password" id="pin-input" placeholder="PIN" inputmode="numeric" maxlength="8" />
+      <button id="unlock-btn">Unlock editing</button>
+      <button class="ghost" id="lock-btn" style="display:none;">Lock</button>
+      <span class="unlock-error" id="unlock-error"></span>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import {
+      getFirestore, doc, onSnapshot, updateDoc, deleteField
+    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+    // ---- Firebase project config ----
+    // Paste the values from Firebase Console > Project settings > General > Your apps > Web app.
+    const firebaseConfig = {
+      apiKey: "AIzaSyBFc_xxWfBN8TEyO1pG70SZLtgQZay3ilY",
+      authDomain: "tennis-social-game.firebaseapp.com",
+      projectId: "tennis-social-game",
+      storageBucket: "tennis-social-game.firebasestorage.app",
+      messagingSenderId: "220838077928",
+      appId: "1:220838077928:web:7b283c417c0cd39012305d",
+      measurementId: "G-TDPVJVQQ5X",
+    };
+
+    const SHARED_PIN = "0815";
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Locked-in random draw order (fixed once — this is the actual schedule, not display order).
+    const DEFAULTS = {
+      doubles: [
+        "Irene & Mia",
+        "Evelyn & Brian Chang",
+        "Joy & Annie",
+        "Bruce Wong & Jean",
+        "Zack & Light",
+        "Ares & Bruce",
+      ],
+      singles: ["Joy", "Zack", "Brian Chang", "Ares", "Light", "Evelyn", "Irene", "Sini", "Bruce", "Annie"],
+    };
+
+    const BOX_W = 168, BOX_H = 80, ROW_UNIT = 92, ROUND_GAP = 56, TOP_PAD = 42;
+
+    const live = {
+      doubles: { names: DEFAULTS.doubles.slice(), winners: {} },
+      singles: { names: DEFAULTS.singles.slice(), winners: {} },
+    };
+
+    let unlocked = sessionStorage.getItem("tennisUnlocked") === "1";
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+    function key(r, i) { return `${r}-${i}`; }
+
+    // Locked-in random play order for each round with more than one simultaneous
+    // game — one continuous "Game #" numbering per bracket, randomized within each
+    // round but always increasing round over round. Each array lists ORIGINAL match
+    // indices in the order they should display/be played, e.g. [0,2,1] means the
+    // match built at index 0 is Game 1, index 2 is Game 2, index 1 is Game 3.
+    // Rounds with only 1-2 matches (Semifinal, Final) just number sequentially —
+    // reshuffling one or two items has no real scheduling value.
+    function orderOf(displayOrder, offset) {
+      const rowOf = [], gameOf = [];
+      displayOrder.forEach((origIdx, pos) => {
+        rowOf[origIdx] = pos;
+        gameOf[origIdx] = pos + 1 + offset;
+      });
+      return { rowOf, gameOf, displayOrder };
+    }
+    const GAME_ORDER = {
+      doublesRound1: orderOf([1, 0, 2], 0),       // games 1-3 — match 1 (Joy & Annie v Bruce Wong & Jean) is Game 1
+      doublesRoundRobin: orderOf([1, 0, 2], 3),  // games 4-6
+      doublesFinal: 7,
+      singlesPrelim: orderOf([0, 1], 0),         // games 1-2
+      // Match index 3 is the two Preliminary Round winners playing each other — kept
+      // last so they get a break instead of walking straight from Game 1/2 into Game 3.
+      singlesRoundOf8: orderOf([1, 2, 0, 3], 2), // games 3-6
+      singlesSemifinal: orderOf([0, 1], 6),      // games 7-8, sequential
+      singlesFinal: 9,
+    };
+
+    // Doubles Round 1: all 6 teams pair off (no byes — 6 is even), producing 3 winners
+    // who move on to the Round 2 round robin.
+    function buildRoundOfSix(names, winners) {
+      const round = [];
+      for (let i = 0; i < names.length; i += 2) {
+        const p1 = { name: names[i] }, p2 = { name: names[i + 1] };
+        const stored = winners[key(0, round.length)];
+        let winner = null;
+        if (stored === p1.name) winner = p1;
+        else if (stored === p2.name) winner = p2;
+        round.push({ p1, p2, winner, editable: true });
+      }
+      return round;
+    }
+
+    // Doubles Round 2: the 3 Round-of-6 winners play each other once each (a round
+    // robin, not a bracket). Ranked by wins, tiebreak by fewest points lost; the top 2
+    // meet in the Final. Scores are entered as "10-7" style strings, first name's score
+    // first, per RR_PAIRS' [a,b] order.
+    const RR_PAIRS = [[0, 1], [0, 2], [1, 2]];
+    function computeStandings(teams, winners) {
+      const stats = teams.map(() => ({ wins: 0, pointsLost: 0 }));
+      let allDecided = teams.every(Boolean);
+      RR_PAIRS.forEach(([a, b], idx) => {
+        const raw = winners[`rr-${idx}`];
+        if (!teams[a] || !teams[b] || !raw) { allDecided = false; return; }
+        const m = /^(\d+)-(\d+)$/.exec(String(raw).trim());
+        if (!m) { allDecided = false; return; }
+        const sa = parseInt(m[1], 10), sb = parseInt(m[2], 10);
+        stats[a].pointsLost += sb;
+        stats[b].pointsLost += sa;
+        if (sa > sb) stats[a].wins++;
+        else if (sb > sa) stats[b].wins++;
+      });
+      const order = [0, 1, 2].sort((x, y) => stats[y].wins - stats[x].wins || stats[x].pointsLost - stats[y].pointsLost);
+      return { stats, order, allDecided };
+    }
+
+    // Singles: the first PRELIM_PLAYERS names (from the locked random draw) play a
+    // preliminary round. Everyone else waits, then joins the prelim winners so the
+    // Round of 8 onward is a clean power-of-2 bracket with no byes at all.
+    // The prelim pair only feeds ONE Round-of-8 match (the last one) — it is not a
+    // normal "round before round0", so it's built and rendered as its own side branch
+    // rather than forced into the regular round-to-round chain.
+    const PRELIM_PLAYERS = 4;
+    function buildRoundsWithPrelim(names, winners) {
+      const prelimNames = names.slice(0, PRELIM_PLAYERS);
+      const waitingNames = names.slice(PRELIM_PLAYERS);
+
+      const prelim = [];
+      for (let i = 0; i < prelimNames.length; i += 2) {
+        const p1 = { name: prelimNames[i] }, p2 = { name: prelimNames[i + 1] };
+        const stored = winners[key("p", prelim.length)];
+        let winner = null;
+        if (stored === p1.name) winner = p1;
+        else if (stored === p2.name) winner = p2;
+        prelim.push({ p1, p2, winner, editable: true });
+      }
+
+      let current = waitingNames.map((name) => ({ name })).concat(prelim.map((m) => m.winner || null));
+      const prelimInto = Math.floor(current.length / 2) - 1;
+
+      const rounds = [];
+      const counts = [];
+      const labels = [];
+      let r = 0;
+      while (current.length > 1) {
+        counts.push(current.length);
+        labels.push(null);
+        const pairCount = Math.floor(current.length / 2);
+        const round = [];
+        for (let i = 0; i < pairCount; i++) {
+          const p1 = current[2 * i], p2 = current[2 * i + 1];
+          const editable = !!(p1 && p2);
+          let winner = null;
+          if (editable) {
+            const stored = winners[key(r, i)];
+            if (stored === p1.name) winner = p1;
+            else if (stored === p2.name) winner = p2;
+          }
+          round.push({ p1, p2, winner, editable });
+        }
+        rounds.push(round);
+        // Round of 8's own match order (used for storage keys and the display rowOf
+        // above) stays raw-index based, but who plays whom in the Semifinal follows
+        // the locked GAME NUMBER order — G3 vs G4, G5 vs G6 — not raw index adjacency.
+        if (r === 0) {
+          const gameOrder = GAME_ORDER.singlesRoundOf8.displayOrder;
+          current = gameOrder.map((origIdx) => round[origIdx].winner || null);
+        } else {
+          current = round.map((m) => m.winner || null);
+        }
+        r++;
+      }
+      return { rounds, counts, labels, prelim, prelimInto };
+    }
+
+    function roundLabel(count) {
+      if (count === 2) return "Final";
+      if (count === 4) return "Semifinal";
+      if (count === 8) return "Quarterfinal";
+      return `Round of ${count}`;
+    }
+
+    async function pickWinner(bId, r, i, name) {
+      if (!unlocked) return;
+      try {
+        await updateDoc(doc(db, "brackets", bId), { [`winners.${key(r, i)}`]: name, pin: SHARED_PIN });
+      } catch (e) {
+        alert("Couldn't save that result: " + e.message);
+      }
+    }
+    async function clearWinner(bId, r, i) {
+      if (!unlocked) return;
+      try {
+        await updateDoc(doc(db, "brackets", bId), { [`winners.${key(r, i)}`]: deleteField(), pin: SHARED_PIN });
+      } catch (e) {
+        alert("Couldn't clear that result: " + e.message);
+      }
+    }
+
+    function slotBox(bId, r, i, slot, match, gameNumber) {
+      if (slot === null) return `<div class="slot tbd" style="__POS__">TBD</div>`;
+      if (slot.name === "BYE") return `<div class="slot bye" style="__POS__">Bye</div>`;
+      const isWinner = match.winner === slot;
+      const isPlayedWin = isWinner && match.editable;
+      const pickable = unlocked && match.editable && !isWinner;
+      const cls = ["slot", isPlayedWin ? "winner" : "", pickable ? "pickable" : ""].filter(Boolean).join(" ");
+      const onclick = pickable ? `onclick="window.__pick('${bId}','${r}',${i},'${encodeURIComponent(slot.name)}')"` : "";
+      const tag = gameNumber ? `<span class="game-tag">G${gameNumber}</span>` : "";
+      return `<div class="${cls}" style="__POS__" ${onclick}>${tag}<span class="name">${escapeHtml(slot.name)}</span></div>`;
+    }
+
+    // Singles is the only bracket that still uses the generic round-to-round chain
+    // (with its preliminary-round side branch); doubles has its own render path below.
+    function renderSinglesBracket() {
+      const bId = "singles";
+      const { names, winners } = live.singles;
+      const { rounds, counts, labels, prelim, prelimInto } = buildRoundsWithPrelim(names, winners);
+      const container = document.getElementById("bracket-singles");
+      const colOffset = prelim ? 1 : 0; // leaves column 0 free for the prelim side-branch
+
+      // A round's match may draw from one prior-round entry (a bye passing straight
+      // through) or two (a real result feeding in) — average only when both exist.
+      // Round-of-8 is the baseline row order, so it's the one round free to display
+      // in the locked random game order rather than raw match index.
+      const roundOf8RowOf = GAME_ORDER.singlesRoundOf8.rowOf;
+      const y = [];
+      y[0] = rounds[0].map((_, i) => TOP_PAD + roundOf8RowOf[i] * ROW_UNIT + BOX_H / 2);
+      for (let r = 1; r < rounds.length; r++) {
+        y[r] = [];
+        // Round of 8 → Semifinal follows game order (G3 v G4, G5 v G6), not raw index.
+        const gameOrder = r === 1 ? GAME_ORDER.singlesRoundOf8.displayOrder : null;
+        for (let i = 0; i < rounds[r].length; i++) {
+          const c1 = gameOrder ? gameOrder[2 * i] : 2 * i;
+          const c2 = gameOrder ? gameOrder[2 * i + 1] : 2 * i + 1;
+          const a = y[r - 1][c1], b = y[r - 1][c2];
+          y[r][i] = b === undefined ? a : (a + b) / 2;
+        }
+      }
+      const roundGameOf = [GAME_ORDER.singlesRoundOf8.gameOf, GAME_ORDER.singlesSemifinal.gameOf, [GAME_ORDER.singlesFinal]];
+
+      // The prelim pair sits either side of the Round-of-8 match it feeds, spaced the
+      // same ROW_UNIT used for every other sibling pair in the diagram — which of the
+      // two physical slots each prelim match lands in follows its own locked order.
+      let prelimY = null;
+      if (prelim) {
+        const parentY = y[0][prelimInto];
+        const slots = [parentY - ROW_UNIT / 2, parentY + ROW_UNIT / 2];
+        const prelimRowOf = GAME_ORDER.singlesPrelim.rowOf;
+        prelimY = prelim.map((_, i) => slots[prelimRowOf[i]]);
+      }
+
+      const champY = y[rounds.length - 1][0];
+      const colX = (r) => (r + colOffset) * (BOX_W + ROUND_GAP);
+      const champX = colX(rounds.length);
+      const totalWidth = champX + BOX_W;
+
+      const allCenters = [champY];
+      y.forEach((round) => allCenters.push(...round));
+      if (prelimY) allCenters.push(...prelimY);
+      const totalHeight = Math.max(...allCenters) + BOX_H / 2 + TOP_PAD;
+
+      let boxesHtml = "", labelsHtml = "", lines = "";
+
+      function renderMatchBoxes(r, i, x, yCenter, match, gameNumber) {
+        const top = yCenter - BOX_H / 2;
+        const halfH = BOX_H / 2 - 1;
+        const pos1 = `left:${x}px;top:${top}px;width:${BOX_W}px;height:${halfH}px;`;
+        const pos2 = `left:${x}px;top:${top + BOX_H / 2 + 2}px;width:${BOX_W}px;height:${halfH}px;`;
+        boxesHtml += slotBox(bId, r, i, match.p1, match, gameNumber).replace("__POS__", pos1);
+        boxesHtml += slotBox(bId, r, i, match.p2, match).replace("__POS__", pos2);
+        if (unlocked && match.winner) {
+          boxesHtml += `<button class="clear-btn" title="Clear result" style="left:${x + BOX_W - 9}px;top:${yCenter - 9}px;" onclick="window.__clear('${bId}','${r}',${i})">×</button>`;
+        }
+      }
+
+      if (prelim) {
+        const prelimX = colX(-1);
+        labelsHtml += `<div class="col-label" style="left:${prelimX}px;width:${BOX_W}px;text-align:center;">Preliminary Round</div>`;
+        prelim.forEach((match, i) => renderMatchBoxes("p", i, prelimX, prelimY[i], match, GAME_ORDER.singlesPrelim.gameOf[i]));
+        const xChild = prelimX + BOX_W, xMid = xChild + ROUND_GAP / 2, xParent = colX(0);
+        const parentY = y[0][prelimInto];
+        lines += `<line x1="${xChild}" y1="${prelimY[0]}" x2="${xMid}" y2="${prelimY[0]}"/>`;
+        lines += `<line x1="${xChild}" y1="${prelimY[1]}" x2="${xMid}" y2="${prelimY[1]}"/>`;
+        lines += `<line x1="${xMid}" y1="${prelimY[0]}" x2="${xMid}" y2="${prelimY[1]}"/>`;
+        lines += `<line x1="${xMid}" y1="${parentY}" x2="${xParent}" y2="${parentY}"/>`;
+      }
+
+      rounds.forEach((round, r) => {
+        labelsHtml += `<div class="col-label" style="left:${colX(r)}px;width:${BOX_W}px;text-align:center;">${labels[r] || roundLabel(counts[r])}</div>`;
+        round.forEach((match, i) => renderMatchBoxes(r, i, colX(r), y[r][i], match, roundGameOf[r][i]));
+        if (r < rounds.length - 1) {
+          // Round of 8 → Semifinal pairs by game order (G3 v G4, G5 v G6), not raw
+          // index adjacency, so its children lookup has to follow the same mapping.
+          const gameOrder = r === 0 ? GAME_ORDER.singlesRoundOf8.displayOrder : null;
+          rounds[r + 1].forEach((_, p) => {
+            const c1 = gameOrder ? gameOrder[2 * p] : 2 * p;
+            const c2 = gameOrder ? gameOrder[2 * p + 1] : 2 * p + 1;
+            const xChild = colX(r) + BOX_W, xMid = xChild + ROUND_GAP / 2, xParent = colX(r + 1);
+            const yc1 = y[r][c1], yc2 = y[r][c2], yp = y[r + 1][p];
+            if (yc2 === undefined) {
+              lines += `<line x1="${xChild}" y1="${yc1}" x2="${xParent}" y2="${yc1}"/>`;
+            } else {
+              lines += `<line x1="${xChild}" y1="${yc1}" x2="${xMid}" y2="${yc1}"/>`;
+              lines += `<line x1="${xChild}" y1="${yc2}" x2="${xMid}" y2="${yc2}"/>`;
+              lines += `<line x1="${xMid}" y1="${yc1}" x2="${xMid}" y2="${yc2}"/>`;
+              lines += `<line x1="${xMid}" y1="${yp}" x2="${xParent}" y2="${yp}"/>`;
+            }
+          });
+        }
+      });
+
+      const champion = rounds[rounds.length - 1][0].winner;
+      lines += `<line x1="${colX(rounds.length - 1) + BOX_W}" y1="${champY}" x2="${champX}" y2="${champY}"/>`;
+      labelsHtml += `<div class="col-label" style="left:${champX}px;width:${BOX_W}px;text-align:center;">Champion</div>`;
+      const champCls = champion ? "slot champion decided" : "slot champion";
+      boxesHtml += `<div class="${champCls}" style="left:${champX}px;top:${champY - BOX_H / 2}px;width:${BOX_W}px;height:${BOX_H}px;">${champion ? escapeHtml(champion.name) : "TBD"}</div>`;
+
+      container.style.width = totalWidth + "px";
+      container.style.height = totalHeight + "px";
+      container.innerHTML =
+        `<svg width="${totalWidth}" height="${totalHeight}" viewBox="0 0 ${totalWidth} ${totalHeight}" role="img" aria-label="Connector lines showing which matches feed into which later-round matchup">${lines}</svg>` +
+        labelsHtml + boxesHtml;
+
+      const championName = champion ? champion.name : null;
+      maybeCelebrate("singles", championName, () => container.querySelector(".slot.champion"));
+      return championName;
+    }
+
+    // Doubles Round 1 box column — single column, no further lines needed since Round 2
+    // is a round robin, not a bracket merge.
+    // Round 1 (real matches) → Round 2 (a straight 1-for-1 passthrough box per team —
+    // no opponent shown, since Round 2 is a round robin, not a bracket pairing) →
+    // Final (data-driven: whichever 2 teams top the Round 2 standings) → Champion.
+    function renderDoublesBoxes(matches, teams, standings) {
+      const container = document.getElementById("bracket-doubles");
+      const { order, allDecided } = standings;
+      const rowOf = GAME_ORDER.doublesRound1.rowOf;
+      const gameOf = GAME_ORDER.doublesRound1.gameOf;
+
+      const y1 = matches.map((_, i) => TOP_PAD + rowOf[i] * ROW_UNIT + BOX_H / 2);
+      const totalHeight = TOP_PAD * 2 + (matches.length - 1) * ROW_UNIT + BOX_H;
+      const col1X = 0, col2X = colX(1), finalX = colX(2), champX = colX(3);
+      // The middle row position, independent of which match landed there after
+      // reordering — Final isn't a fixed pair of Round-2 slots, so it just sits centered.
+      const finalY = TOP_PAD + Math.floor((matches.length - 1) / 2) * ROW_UNIT + BOX_H / 2;
+      const totalWidth = champX + BOX_W;
+
+      function colX(n) { return n * (BOX_W + ROUND_GAP); }
+
+      let boxesHtml = "", lines = "";
+      let labelsHtml =
+        `<div class="col-label" style="left:${col1X}px;width:${BOX_W}px;text-align:center;">Round 1 (7-point tie break)</div>` +
+        `<div class="col-label" style="left:${col2X}px;width:${BOX_W}px;text-align:center;">Round 2 (7-point tie break)</div>` +
+        `<div class="col-label" style="left:${finalX}px;width:${BOX_W}px;text-align:center;">Final (1 set)</div>` +
+        `<div class="col-label" style="left:${champX}px;width:${BOX_W}px;text-align:center;">Champion</div>`;
+
+      matches.forEach((match, i) => {
+        const top = y1[i] - BOX_H / 2, halfH = BOX_H / 2 - 1;
+        const pos1 = `left:${col1X}px;top:${top}px;width:${BOX_W}px;height:${halfH}px;`;
+        const pos2 = `left:${col1X}px;top:${top + BOX_H / 2 + 2}px;width:${BOX_W}px;height:${halfH}px;`;
+        boxesHtml += slotBox("doubles", 0, i, match.p1, match, gameOf[i]).replace("__POS__", pos1);
+        boxesHtml += slotBox("doubles", 0, i, match.p2, match).replace("__POS__", pos2);
+        if (unlocked && match.winner) {
+          boxesHtml += `<button class="clear-btn" title="Clear result" style="left:${col1X + BOX_W - 9}px;top:${y1[i] - 9}px;" onclick="window.__clearDoublesR1(${i})">×</button>`;
+        }
+
+        // Round 2: single full-height box, straight passthrough line, no opponent.
+        const r2Top = y1[i] - BOX_H / 2;
+        const r2Slot = match.winner ? { name: match.winner.name } : null;
+        const r2Match = { winner: r2Slot, editable: false };
+        boxesHtml += slotBox("doubles", 1, i, r2Slot, r2Match).replace("__POS__", `left:${col2X}px;top:${r2Top}px;width:${BOX_W}px;height:${BOX_H}px;`);
+        if (match.winner) {
+          lines += `<line x1="${col1X + BOX_W}" y1="${y1[i]}" x2="${col2X}" y2="${y1[i]}"/>`;
+        }
+
+        // Diagonal into the Final for every team that's reached Round 2 — the box
+        // itself only fills in once the standings actually decide who's through.
+        if (match.winner) {
+          lines += `<line x1="${col2X + BOX_W}" y1="${y1[i]}" x2="${finalX}" y2="${finalY}"/>`;
+        }
+      });
+
+      const finalist1 = allDecided ? teams[order[0]] : null;
+      const finalist2 = allDecided ? teams[order[1]] : null;
+      const fp1 = finalist1 ? { name: finalist1 } : null;
+      const fp2 = finalist2 ? { name: finalist2 } : null;
+      const finalWinnerName = live.doubles.winners["final-0"];
+      let finalWinner = null;
+      if (fp1 && finalWinnerName === fp1.name) finalWinner = fp1;
+      else if (fp2 && finalWinnerName === fp2.name) finalWinner = fp2;
+      const finalMatch = { winner: finalWinner, editable: !!(fp1 && fp2) };
+
+      const fTop = finalY - BOX_H / 2, fHalfH = BOX_H / 2 - 1;
+      boxesHtml += slotBox("doubles", "final", 0, fp1, finalMatch, GAME_ORDER.doublesFinal).replace("__POS__", `left:${finalX}px;top:${fTop}px;width:${BOX_W}px;height:${fHalfH}px;`);
+      boxesHtml += slotBox("doubles", "final", 0, fp2, finalMatch).replace("__POS__", `left:${finalX}px;top:${fTop + BOX_H / 2 + 2}px;width:${BOX_W}px;height:${fHalfH}px;`);
+      if (unlocked && finalMatch.winner) {
+        boxesHtml += `<button class="clear-btn" title="Clear result" style="left:${finalX + BOX_W - 9}px;top:${finalY - 9}px;" onclick="window.__clear('doubles','final',0)">×</button>`;
+      }
+
+      lines += `<line x1="${finalX + BOX_W}" y1="${finalY}" x2="${champX}" y2="${finalY}"/>`;
+      const championName = finalMatch.winner ? finalMatch.winner.name : null;
+      const champCls = championName ? "slot champion decided" : "slot champion";
+      boxesHtml += `<div class="${champCls}" style="left:${champX}px;top:${finalY - BOX_H / 2}px;width:${BOX_W}px;height:${BOX_H}px;">${championName ? escapeHtml(championName) : "TBD"}</div>`;
+
+      container.style.width = totalWidth + "px";
+      container.style.height = totalHeight + "px";
+      container.innerHTML =
+        `<svg width="${totalWidth}" height="${totalHeight}" viewBox="0 0 ${totalWidth} ${totalHeight}" role="img" aria-label="Connector lines from Round 1 through Round 2 into the Final and Champion">${lines}</svg>` +
+        labelsHtml + boxesHtml;
+
+      maybeCelebrate("doubles", championName, () => container.querySelector(".slot.champion"));
+    }
+
+    async function saveRoundRobinScore(idx, value) {
+      if (!unlocked) return;
+      try {
+        await updateDoc(doc(db, "brackets", "doubles"), { [`winners.rr-${idx}`]: value, pin: SHARED_PIN });
+      } catch (e) {
+        alert("Couldn't save that score: " + e.message);
+      }
+    }
+
+    // Clearing a Round 1 result also removes that team from Round 2 — any round-robin
+    // score already entered against them is now attached to an unknown "TBD" slot, so
+    // it has to go too, along with the Final (its 2 slots are standings-derived and may
+    // no longer be correct).
+    async function clearDoublesRoundOneResult(i) {
+      if (!unlocked) return;
+      const updates = { [`winners.${key(0, i)}`]: deleteField(), "winners.final-0": deleteField(), pin: SHARED_PIN };
+      RR_PAIRS.forEach((pair, idx) => {
+        if (pair.includes(i)) updates[`winners.rr-${idx}`] = deleteField();
+      });
+      try {
+        await updateDoc(doc(db, "brackets", "doubles"), updates);
+      } catch (e) {
+        alert("Couldn't clear that result: " + e.message);
+      }
+    }
+
+    // The score-entry card: who plays whom in the round robin, their scores, and the
+    // live standings. The bracket-box view above is the canonical place Final and
+    // Champion live, so this card sticks to just Round 2's own results.
+    function renderDoublesStage2(teams, winners, standings) {
+      const container = document.getElementById("doubles-stage2");
+      const { stats, order, allDecided } = standings;
+      const rrRowOf = GAME_ORDER.doublesRoundRobin.rowOf;
+      const rrGameOf = GAME_ORDER.doublesRoundRobin.gameOf;
+      const rowsByOrder = RR_PAIRS.map((pair, idx) => ({ pair, idx })).sort((x, y) => rrRowOf[x.idx] - rrRowOf[y.idx]);
+
+      let html = `<div class="rr-card"><h3 class="rr-title">Round 2 — Round Robin (7 points tie break)</h3>`;
+      rowsByOrder.forEach(({ pair: [a, b], idx }) => {
+        const nameA = teams[a], nameB = teams[b];
+        const raw = winners[`rr-${idx}`] || "";
+        const m = /^(\d+)-(\d+)$/.exec(raw);
+        const scoreA = m ? m[1] : "", scoreB = m ? m[2] : "";
+        const canEdit = unlocked && nameA && nameB;
+        const scoreCell = (side, val) => canEdit
+          ? `<input class="rr-score" type="number" min="0" inputmode="numeric" data-idx="${idx}" data-side="${side}" value="${val}" />`
+          : `<span class="rr-score-view">${val || "–"}</span>`;
+        html += `<div class="rr-row">
+          <span class="game-tag">G${rrGameOf[idx]}</span>
+          <span class="rr-team">${nameA ? escapeHtml(nameA) : "TBD"}</span>
+          ${scoreCell("a", scoreA)}
+          <span class="rr-dash">–</span>
+          ${scoreCell("b", scoreB)}
+          <span class="rr-team">${nameB ? escapeHtml(nameB) : "TBD"}</span>
+        </div>`;
+      });
+      html += `<table class="rr-standings"><thead><tr><th>Rank</th><th>Team</th><th>W</th><th>Pts lost</th></tr></thead><tbody>`;
+      order.forEach((idx, rank) => {
+        const name = teams[idx];
+        const advancing = allDecided && rank < 2 && name;
+        html += `<tr class="${advancing ? "advancing" : ""}">
+          <td>${rank + 1}</td>
+          <td>${name ? escapeHtml(name) : "TBD"}</td>
+          <td>${name ? stats[idx].wins : "–"}</td>
+          <td>${name ? stats[idx].pointsLost : "–"}</td>
+        </tr>`;
+      });
+      html += `</tbody></table></div>`;
+
+      container.innerHTML = html;
+      container.querySelectorAll(".rr-score").forEach((input) => {
+        input.addEventListener("change", () => {
+          const idx = input.dataset.idx;
+          const a = container.querySelector(`.rr-score[data-idx="${idx}"][data-side="a"]`);
+          const b = container.querySelector(`.rr-score[data-idx="${idx}"][data-side="b"]`);
+          const av = a.value.trim(), bv = b.value.trim();
+          if (av === "" || bv === "") return;
+          if (!/^\d+$/.test(av) || !/^\d+$/.test(bv)) {
+            alert("Enter whole numbers for the score.");
+            return;
+          }
+          saveRoundRobinScore(idx, `${av}-${bv}`);
+        });
+      });
+    }
+
+    function renderDoublesBracket() {
+      const { names, winners } = live.doubles;
+      const matches = buildRoundOfSix(names, winners);
+      const teams = matches.map((m) => (m.winner ? m.winner.name : null));
+      const standings = computeStandings(teams, winners);
+      renderDoublesBoxes(matches, teams, standings);
+      renderDoublesStage2(teams, winners, standings);
+    }
+
+    function renderAll() {
+      renderDoublesBracket();
+      renderSinglesBracket();
+    }
+
+    // Confetti burst + a little pop on the Champion box, fired once when a champion
+    // first becomes known — not on page load, and not on unrelated re-renders.
+    // `findEl` is a thunk (not the element itself) since the champion box is rebuilt
+    // via innerHTML on every render, including the one that just happened.
+    const seenFirstSnapshot = { doubles: false, singles: false };
+    const lastChampionName = { doubles: null, singles: null };
+
+    function maybeCelebrate(bId, championName, findEl) {
+      if (seenFirstSnapshot[bId] && championName && lastChampionName[bId] !== championName) {
+        celebrateChampion(findEl());
+      }
+      lastChampionName[bId] = championName;
+    }
+
+    function celebrateChampion(champEl) {
+      if (!champEl) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+      champEl.classList.add("celebrate");
+      setTimeout(() => champEl.classList.remove("celebrate"), 650);
+
+      const rect = champEl.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
+      const W = 320, H = 220;
+      const canvas = document.createElement("canvas");
+      canvas.width = W;
+      canvas.height = H;
+      canvas.style.position = "fixed";
+      canvas.style.left = (cx - W / 2) + "px";
+      canvas.style.top = (cy - H / 2) + "px";
+      canvas.style.pointerEvents = "none";
+      canvas.style.zIndex = "9999";
+      document.body.appendChild(canvas);
+
+      const ctx = canvas.getContext("2d");
+      const colors = ["#1C7C4C", "#4FAE69", "#D4AF37", "#8FB89D"];
+      const particles = Array.from({ length: 60 }, () => ({
+        x: W / 2, y: H / 2,
+        vx: (Math.random() - 0.5) * 6,
+        vy: -Math.random() * 6 - 2,
+        size: 3 + Math.random() * 3,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rot: Math.random() * Math.PI * 2,
+        vrot: (Math.random() - 0.5) * 0.3,
+      }));
+
+      const duration = 1100;
+      const start = performance.now();
+      function frame(now) {
+        const t = now - start;
+        ctx.clearRect(0, 0, W, H);
+        particles.forEach((p) => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.18;
+          p.rot += p.vrot;
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, 1 - t / duration);
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+          ctx.restore();
+        });
+        if (t < duration) requestAnimationFrame(frame);
+        else canvas.remove();
+      }
+      requestAnimationFrame(frame);
+    }
+
+    window.__pick = (bId, r, i, encodedName) => pickWinner(bId, r, i, decodeURIComponent(encodedName));
+    window.__clear = (bId, r, i) => clearWinner(bId, r, i);
+    window.__clearDoublesR1 = (i) => clearDoublesRoundOneResult(i);
+
+    ["doubles", "singles"].forEach((bId) => {
+      onSnapshot(doc(db, "brackets", bId), (snap) => {
+        const data = snap.data() || {};
+        live[bId].names = Array.isArray(data.names) && data.names.length === DEFAULTS[bId].length ? data.names : DEFAULTS[bId].slice();
+        live[bId].winners = data.winners || {};
+        renderAll();
+        seenFirstSnapshot[bId] = true;
+      }, (err) => {
+        console.error(err);
+      });
+    });
+
+    // ---- Tabs ----
+    document.querySelectorAll(".tab").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", "false"));
+        tab.setAttribute("aria-selected", "true");
+        document.querySelectorAll(".panel").forEach((p) => p.removeAttribute("data-active"));
+        document.getElementById(tab.getAttribute("aria-controls")).setAttribute("data-active", "true");
+      });
+    });
+
+    // ---- Unlock ----
+    function setUnlocked(v) {
+      unlocked = v;
+      sessionStorage.setItem("tennisUnlocked", v ? "1" : "0");
+      document.getElementById("status-pill").textContent = v ? "Editing unlocked" : "Viewing only";
+      document.getElementById("status-pill").classList.toggle("on", v);
+      document.getElementById("unlock-btn").style.display = v ? "none" : "";
+      document.getElementById("pin-input").style.display = v ? "none" : "";
+      document.getElementById("lock-btn").style.display = v ? "" : "none";
+      renderAll();
+    }
+    document.getElementById("unlock-btn").addEventListener("click", () => {
+      const val = document.getElementById("pin-input").value.trim();
+      const err = document.getElementById("unlock-error");
+      if (val === SHARED_PIN) {
+        err.textContent = "";
+        document.getElementById("pin-input").value = "";
+        setUnlocked(true);
+      } else {
+        err.textContent = "Wrong PIN.";
+      }
+    });
+    document.getElementById("pin-input").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") document.getElementById("unlock-btn").click();
+    });
+    document.getElementById("lock-btn").addEventListener("click", () => setUnlocked(false));
+
+    setUnlocked(unlocked);
+    renderAll();
+  </script>
+</body>
+
+</html>
