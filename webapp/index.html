@@ -4,10 +4,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tennis Social Game Draws</title>
+  <title>Tennis Social Game Draw</title>
   <style>
     :root {
-      --bg: #FFFFFF;
+      --bg: #F3F5F7;
       --surface: #FFFFFF;
       --surface-alt: #EAF3EC;
       --ink: #0B4228;
@@ -32,6 +32,7 @@
       color: var(--ink);
       font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       padding: 32px 24px 64px;
+      overflow-x: hidden;
     }
 
     .page {
@@ -63,48 +64,18 @@
       max-width: 65ch;
     }
 
-    .rules-card {
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      box-shadow: var(--shadow);
-      margin: 4px 0 20px;
+    .rules-page-title {
+      margin: 20px 0 16px;
+      font-size: 18px;
+    }
+
+    .rules-page-title:first-child {
+      margin-top: 8px;
+    }
+
+    #panel-rules .subnote {
+      margin: 0 0 14px;
       max-width: 65ch;
-      padding: 0 14px;
-    }
-
-    .rules-card summary {
-      cursor: pointer;
-      font-weight: 700;
-      font-size: 13px;
-      color: var(--ink);
-      padding: 12px 0;
-      list-style: none;
-    }
-
-    .rules-card summary::-webkit-details-marker {
-      display: none;
-    }
-
-    .rules-card summary::before {
-      content: "▸";
-      display: inline-block;
-      margin-right: 6px;
-      color: var(--accent);
-      transition: transform 0.15s ease;
-    }
-
-    .rules-card[open] summary::before {
-      transform: rotate(90deg);
-    }
-
-    .rules-card .subnote {
-      margin: 0 0 12px;
-      max-width: none;
-    }
-
-    .rules-card .subnote:last-child {
-      margin-bottom: 14px;
     }
 
     .unlock-bar {
@@ -152,55 +123,62 @@
       outline-offset: 2px;
     }
 
-    .status-pill {
-      font-size: 12px;
-      font-weight: 700;
-      padding: 3px 10px;
-      border-radius: 999px;
-      background: var(--surface-alt);
-      color: var(--ink-muted);
-    }
-
-    .status-pill.on {
-      color: var(--accent-ink);
-      background: var(--accent);
-    }
-
     .unlock-error {
       color: var(--danger);
       font-size: 12.5px;
     }
 
+    .tabs-row {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .tabs-row::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      width: 100vw;
+      margin-left: -50vw;
+      height: 1px;
+      background: var(--line);
+      z-index: 0;
+    }
+
     .tabs {
       display: flex;
-      gap: 6px;
-      margin-bottom: 20px;
-      padding-bottom: 14px;
-      border-bottom: 1px solid var(--line);
+      gap: 24px;
+      position: relative;
     }
 
     .tab {
+      position: relative;
+      z-index: 1;
       appearance: none;
       background: none;
-      border: 1px solid transparent;
-      border-radius: 999px;
+      border: none;
+      border-radius: 0;
+      border-bottom: 3px solid transparent;
       font: inherit;
-      font-weight: 700;
+      font-weight: 400;
       font-size: 14px;
       letter-spacing: 0.01em;
       color: var(--ink-muted);
-      padding: 8px 16px;
+      padding: 8px 0 11px;
       cursor: pointer;
     }
 
-    .tab+.tab {
-      margin-left: 8px;
+    .tab[aria-selected="true"] {
+      color: var(--accent);
     }
 
-    .tab[aria-selected="true"] {
-      color: var(--accent-ink);
+    .tab-indicator {
+      position: absolute;
+      bottom: 0;
+      height: 3px;
       background: var(--accent);
-      border-color: var(--accent);
+      transition: left 0.25s ease, width 0.25s ease;
+      z-index: 1;
     }
 
     section.panel {
@@ -220,7 +198,7 @@
 
     .round-chip {
       appearance: none;
-      background: var(--surface-alt);
+      background: #E6E8EE;
       border: 1px solid transparent;
       border-radius: 8px;
       font: inherit;
@@ -231,10 +209,6 @@
       cursor: pointer;
     }
 
-    .round-chip:hover {
-      border-color: var(--line-strong);
-    }
-
     .round-chip.active {
       color: var(--accent-ink);
       background: var(--accent);
@@ -242,10 +216,13 @@
 
     .bracket-scroll {
       overflow-x: auto;
-      padding: 20px 0 8px;
+      padding: 10px 24px 8px;
       margin-top: 14px;
-      width: 100%;
-      max-width: 420px;
+      width: 100vw;
+      position: relative;
+      left: 50%;
+      margin-left: -50vw;
+      background: #14291A;
     }
 
     .bracket-wrap {
@@ -261,12 +238,12 @@
 
     .col-label {
       position: absolute;
-      top: 4px;
-      font-size: 11px;
+      top: 0;
+      font-size: 13px;
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: var(--ink-muted);
+      color: #FFFFFF;
     }
 
     .slot {
@@ -276,6 +253,7 @@
       gap: 8px;
       border: 1px solid var(--line);
       background: var(--surface);
+      color: #000000;
       border-radius: 8px;
       padding: 0 12px;
       font-size: 13px;
@@ -284,10 +262,10 @@
     }
 
     .slot .name {
-      font-weight: 600;
+      font-weight: 400;
       overflow: hidden;
       text-overflow: ellipsis;
-      flex: 1 1 auto;
+      flex: 0 1 auto;
       min-width: 0;
     }
 
@@ -297,10 +275,21 @@
       font-size: 10px;
       color: var(--ink-muted);
       background: var(--surface-alt);
-      border-radius: 5px;
-      padding: 2px 5px;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       line-height: 1;
+      padding: 0;
       flex-shrink: 0;
+    }
+
+    .rr-row .game-tag {
+      font-size: 14px;
+      width: 26px;
+      height: 26px;
     }
 
     .slot.tbd {
@@ -322,25 +311,11 @@
     }
 
     .slot.winner {
-      border-color: var(--accent);
-      box-shadow: inset 0 0 0 1px var(--accent);
+      background: #D6ECDF;
       font-weight: 800;
     }
 
-    .slot.champion {
-      border: 1.5px solid var(--accent);
-      background: var(--surface-alt);
-      font-weight: 800;
-      justify-content: center;
-      color: var(--ink-muted);
-    }
-
-    .slot.champion.decided {
-      background: var(--accent);
-      color: var(--accent-ink);
-    }
-
-    .slot.champion.celebrate {
+    .slot.celebrate {
       animation: champion-pop 0.6s ease;
     }
 
@@ -388,25 +363,29 @@
     }
 
     .bracket-wrap line {
-      stroke: var(--line-strong);
+      stroke: #FFFFFF;
       stroke-width: 1.5;
     }
 
     .rr-card {
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 16px 18px;
-      margin-top: 20px;
-      max-width: 480px;
+      background: #12321C;
+      border: none;
+      border-radius: 0;
+      padding: 16px 24px 20px;
+      margin-top: 0;
+      max-width: none;
+      width: 100vw;
+      position: relative;
+      left: 50%;
+      margin-left: -50vw;
     }
 
     .rr-title {
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.04em;
-      color: var(--ink-muted);
+      color: #FFFFFF;
       margin: 0 0 12px;
     }
 
@@ -414,9 +393,10 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--line);
+      padding: 10px 12px;
+      border-bottom: 1px solid #FFFFFF;
       font-size: 14px;
+      color: #FFFFFF;
     }
 
     .rr-row:last-of-type {
@@ -425,7 +405,7 @@
 
     .rr-team {
       flex: 1 1 auto;
-      font-weight: 600;
+      font-weight: 400;
       min-width: 0;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -447,18 +427,18 @@
 
     .rr-score {
       padding: 4px 2px;
-      border: 1px solid var(--line);
+      border: none;
       border-radius: 6px;
-      background: var(--bg);
-      color: var(--ink);
+      background: transparent;
+      color: #FFFFFF;
     }
 
     .rr-score-view {
-      color: var(--ink-muted);
+      color: #FFFFFF;
     }
 
     .rr-dash {
-      color: var(--ink-muted);
+      color: #FFFFFF;
       flex: 0 0 auto;
     }
 
@@ -466,13 +446,14 @@
       width: 100%;
       margin-top: 14px;
       border-collapse: collapse;
-      font-size: 13px;
+      font-size: 14px;
+      color: #FFFFFF;
     }
 
     .rr-standings th,
     .rr-standings td {
       text-align: left;
-      padding: 6px 8px;
+      padding: 8px 8px;
       font-variant-numeric: tabular-nums;
     }
 
@@ -485,13 +466,21 @@
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.03em;
-      color: var(--ink-muted);
-      border-bottom: 1px solid var(--line);
+      color: #FFFFFF;
+      border-bottom: none;
+    }
+
+    .rr-standings tbody tr {
+      border-bottom: 1px solid #FFFFFF;
+    }
+
+    .rr-standings tbody tr:last-child {
+      border-bottom: none;
     }
 
     .rr-standings tr.advancing {
       font-weight: 700;
-      color: var(--ink);
+      color: #FFFFFF;
     }
 
     .rr-standings tr.advancing td:nth-child(2)::after {
@@ -521,30 +510,24 @@
 
   <div class="page">
     <header class="top" style="margin-bottom: 20px;">
-      <h1>Tennis Social Game Draws</h1>
-      <h4 style="flex-basis: 100%; margin: 0;">📍 Poplar Recreation Ground Tennis Court</h4>
-      <h4 style="flex-basis: 100%; margin: 0 0 4px;">⏰ Aug 15 Sat. 3pm-6pm</h4>
+      <h1>Tennis Social Game Draw</h1>
+      <h4 style="flex-basis: 100%; margin: 0; font-weight: 400;">📍 Poplar Recreation Ground Tennis Court</h4>
+      <h4 style="flex-basis: 100%; margin: 0 0 4px; font-weight: 400;">⏰ Aug 15 Sat 3pm - 6pm</h4>
     </header>
 
-    <div class="tabs" role="tablist" aria-label="Bracket selector">
-      <button class="tab" role="tab" id="tab-doubles" aria-controls="panel-doubles" aria-selected="true">Doubles · 6
-        teams</button>
-      <button class="tab" role="tab" id="tab-singles" aria-controls="panel-singles" aria-selected="false">Singles · 10
-        players</button>
+    <div class="tabs-row">
+      <div class="tabs" role="tablist" aria-label="Bracket selector">
+        <button class="tab" role="tab" id="tab-doubles" aria-controls="panel-doubles"
+          aria-selected="true">Doubles</button>
+        <button class="tab" role="tab" id="tab-singles" aria-controls="panel-singles"
+          aria-selected="false">Singles</button>
+        <button class="tab" role="tab" id="tab-rules" aria-controls="panel-rules"
+          aria-selected="false">Rules</button>
+        <span class="tab-indicator" id="tab-indicator"></span>
+      </div>
     </div>
 
     <section class="panel" id="panel-doubles" role="tabpanel" aria-labelledby="tab-doubles" data-active="true">
-      <details class="rules-card">
-        <summary>Rules</summary>
-        <p class="subnote">The doubles game has three rounds: Round 1, Round 2, and the Final.</p>
-        <p class="subnote">Rounds 1 and 2 will both be played as 7-point tie breaks.</p>
-        <p class="subnote">In Round 1, it's single elimination, so if you lose, you're out.</p>
-        <p class="subnote">Round 2 will be a round robin with 3 teams. Each team will play the other two teams
-          once, and the top 2 teams will advance to the Final. Rankings will be based on total wins. If two or
-          more teams are tied on wins, the team that has lost fewest points overall will rank higher.</p>
-        <p class="subnote">The Final will be played as a full set, with the first team to 6 games winning. If
-          the score reaches 6–6, a 7-point tie break will decide the match.</p>
-      </details>
       <div class="round-selector" id="round-selector-doubles"></div>
       <div class="bracket-scroll" id="bracket-scroll-doubles">
         <div id="bracket-doubles" class="bracket-wrap"></div>
@@ -553,15 +536,27 @@
     </section>
 
     <section class="panel" id="panel-singles" role="tabpanel" aria-labelledby="tab-singles">
-      <p class="subnote">One Point Slam</p>
       <div class="round-selector" id="round-selector-singles"></div>
       <div class="bracket-scroll" id="bracket-scroll-singles">
         <div id="bracket-singles" class="bracket-wrap"></div>
       </div>
     </section>
 
+    <section class="panel" id="panel-rules" role="tabpanel" aria-labelledby="tab-rules">
+      <h3 class="rules-page-title">Doubles Rules</h3>
+      <p class="subnote">The doubles game has three rounds: Round 1, Round 2, and the Final.</p>
+      <p class="subnote">Rounds 1 and 2 will both be played as 7-point tie breaks.</p>
+      <p class="subnote">In Round 1, it's single elimination, so if you lose, you're out.</p>
+      <p class="subnote">Round 2 will be a round robin with 3 teams. Each team will play the other two teams
+        once, and the top 2 teams will advance to the Final. Rankings will be based on total wins. If two or
+        more teams are tied on wins, the team that has lost fewest points overall will rank higher.</p>
+      <p class="subnote">The Final will be played as a full set, with the first team to 6 games winning. If
+        the score reaches 6–6, a 7-point tie break will decide the match.</p>
+      <h3 class="rules-page-title">Singles Rules</h3>
+      <p class="subnote">One Point Slam</p>
+    </section>
+
     <div class="unlock-bar">
-      <span class="status-pill" id="status-pill">Viewing only</span>
       <input type="password" id="pin-input" placeholder="PIN" inputmode="numeric" maxlength="8" />
       <button id="unlock-btn">Unlock editing</button>
       <button class="ghost" id="lock-btn" style="display:none;">Lock</button>
@@ -806,16 +801,19 @@
       }
     }
 
-    function slotBox(bId, r, i, slot, match, gameNumber) {
-      if (slot === null) return `<div class="slot tbd" style="__POS__">TBD</div>`;
-      if (slot.name === "BYE") return `<div class="slot bye" style="__POS__">Bye</div>`;
+    function slotBox(bId, r, i, slot, match, gameNumber, extraCls) {
+      const finalCls = extraCls || "";
+      if (slot === null) return `<div class="slot tbd${finalCls}" style="__POS__">TBD</div>`;
+      if (slot.name === "BYE") return `<div class="slot bye${finalCls}" style="__POS__">Bye</div>`;
       const isWinner = match.winner === slot;
       const isPlayedWin = isWinner && match.editable;
       const pickable = unlocked && match.editable && !isWinner;
-      const cls = ["slot", isPlayedWin ? "winner" : "", pickable ? "pickable" : ""].filter(Boolean).join(" ");
+      const cls = ["slot", isPlayedWin ? "winner" : "", pickable ? "pickable" : ""].filter(Boolean).join(" ") + finalCls;
       const onclick = pickable ? `onclick="window.__pick('${bId}','${r}',${i},'${encodeURIComponent(slot.name)}')"` : "";
       const tag = gameNumber ? `<span class="game-tag">G${gameNumber}</span>` : "";
-      return `<div class="${cls}" style="__POS__" ${onclick}>${tag}<span class="name">${escapeHtml(slot.name)}</span></div>`;
+      const isChampion = isPlayedWin && finalCls.includes("final-slot");
+      const name = isChampion ? `🏆 ${escapeHtml(slot.name)} 🏆` : escapeHtml(slot.name);
+      return `<div class="${cls}" style="__POS__" ${onclick}><span class="name">${name}</span>${tag}</div>`;
     }
 
     // Singles is the only bracket that still uses the generic round-to-round chain
@@ -858,12 +856,10 @@
         prelimY = prelim.map((_, i) => slots[prelimRowOf[i]]);
       }
 
-      const champY = y[rounds.length - 1][0];
       const colX = (r) => (r + colOffset) * (BOX_W + ROUND_GAP);
-      const champX = colX(rounds.length);
-      const totalWidth = champX + BOX_W;
+      const totalWidth = colX(rounds.length - 1) + BOX_W;
 
-      const allCenters = [champY];
+      const allCenters = [];
       y.forEach((round) => allCenters.push(...round));
       if (prelimY) allCenters.push(...prelimY);
       const totalHeight = Math.max(...allCenters) + BOX_H / 2 + TOP_PAD;
@@ -872,11 +868,12 @@
 
       function renderMatchBoxes(r, i, x, yCenter, match, gameNumber) {
         const top = yCenter - BOX_H / 2;
-        const halfH = BOX_H / 2 - 1;
-        const pos1 = `left:${x}px;top:${top}px;width:${BOX_W}px;height:${halfH}px;`;
-        const pos2 = `left:${x}px;top:${top + BOX_H / 2 + 2}px;width:${BOX_W}px;height:${halfH}px;`;
-        boxesHtml += slotBox(bId, r, i, match.p1, match, gameNumber).replace("__POS__", pos1);
-        boxesHtml += slotBox(bId, r, i, match.p2, match).replace("__POS__", pos2);
+        const halfH = BOX_H / 2;
+        const finalCls = r === rounds.length - 1 ? " final-slot" : "";
+        const pos1 = `left:${x}px;top:${top}px;width:${BOX_W}px;height:${halfH}px;border-bottom:none;border-radius:8px 8px 0 0;`;
+        const pos2 = `left:${x}px;top:${top + BOX_H / 2}px;width:${BOX_W}px;height:${halfH}px;border-top:none;border-radius:0 0 8px 8px;`;
+        boxesHtml += slotBox(bId, r, i, match.p1, match, gameNumber, finalCls).replace("__POS__", pos1);
+        boxesHtml += slotBox(bId, r, i, match.p2, match, null, finalCls).replace("__POS__", pos2);
         if (unlocked && match.winner) {
           boxesHtml += `<button class="clear-btn" title="Clear result" style="left:${x + BOX_W - 9}px;top:${yCenter - 9}px;" onclick="window.__clear('${bId}','${r}',${i})">×</button>`;
         }
@@ -884,8 +881,8 @@
 
       if (prelim) {
         const prelimX = colX(-1);
-        labelsHtml += `<div class="col-label" style="left:${prelimX}px;width:${BOX_W}px;text-align:center;">Preliminary Round</div>`;
-        chipItems.push({ x: prelimX, label: "Prelim" });
+        labelsHtml += `<div class="col-label" style="left:${prelimX}px;width:${BOX_W}px;text-align:left;">Round 1</div>`;
+        chipItems.push({ x: prelimX, label: "R1" });
         prelim.forEach((match, i) => renderMatchBoxes("p", i, prelimX, prelimY[i], match, GAME_ORDER.singlesPrelim.gameOf[i]));
         const xChild = prelimX + BOX_W, xMid = xChild + ROUND_GAP / 2, xParent = colX(0);
         const parentY = y[0][prelimInto];
@@ -897,7 +894,7 @@
 
       rounds.forEach((round, r) => {
         const roundText = labels[r] || roundLabel(counts[r]);
-        labelsHtml += `<div class="col-label" style="left:${colX(r)}px;width:${BOX_W}px;text-align:center;">${roundText}</div>`;
+        labelsHtml += `<div class="col-label" style="left:${colX(r)}px;width:${BOX_W}px;text-align:left;">${roundText}</div>`;
         chipItems.push({ x: colX(r), label: shortRoundLabel(roundText) });
         round.forEach((match, i) => renderMatchBoxes(r, i, colX(r), y[r][i], match, roundGameOf[r][i]));
         if (r < rounds.length - 1) {
@@ -922,10 +919,6 @@
       });
 
       const champion = rounds[rounds.length - 1][0].winner;
-      lines += `<line x1="${colX(rounds.length - 1) + BOX_W}" y1="${champY}" x2="${champX}" y2="${champY}"/>`;
-      labelsHtml += `<div class="col-label" style="left:${champX}px;width:${BOX_W}px;text-align:center;">Champion</div>`;
-      const champCls = champion ? "slot champion decided" : "slot champion";
-      boxesHtml += `<div class="${champCls}" style="left:${champX}px;top:${champY - BOX_H / 2}px;width:${BOX_W}px;height:${BOX_H}px;">${champion ? escapeHtml(champion.name) : "TBD"}</div>`;
 
       container.style.width = totalWidth + "px";
       container.style.height = totalHeight + "px";
@@ -935,7 +928,7 @@
       renderRoundSelector("round-selector-singles", "bracket-scroll-singles", chipItems);
 
       const championName = champion ? champion.name : null;
-      maybeCelebrate("singles", championName, () => container.querySelector(".slot.champion"));
+      maybeCelebrate("singles", championName, () => container.querySelector(".final-slot.winner"));
       return championName;
     }
 
@@ -952,25 +945,24 @@
 
       const y1 = matches.map((_, i) => TOP_PAD + rowOf[i] * ROW_UNIT + BOX_H / 2);
       const totalHeight = TOP_PAD * 2 + (matches.length - 1) * ROW_UNIT + BOX_H;
-      const col1X = 0, col2X = colX(1), finalX = colX(2), champX = colX(3);
+      const col1X = 0, col2X = colX(1), finalX = colX(2);
       // The middle row position, independent of which match landed there after
       // reordering — Final isn't a fixed pair of Round-2 slots, so it just sits centered.
       const finalY = TOP_PAD + Math.floor((matches.length - 1) / 2) * ROW_UNIT + BOX_H / 2;
-      const totalWidth = champX + BOX_W;
+      const totalWidth = finalX + BOX_W;
 
       function colX(n) { return n * (BOX_W + ROUND_GAP); }
 
       let boxesHtml = "", lines = "";
       let labelsHtml =
-        `<div class="col-label" style="left:${col1X}px;width:${BOX_W}px;text-align:center;">Round 1<br>(7pts tie break)</div>` +
-        `<div class="col-label" style="left:${col2X}px;width:${BOX_W}px;text-align:center;">Round 2<br>(7pts tie break)</div>` +
-        `<div class="col-label" style="left:${finalX}px;width:${BOX_W}px;text-align:center;">Final (1 set)</div>` +
-        `<div class="col-label" style="left:${champX}px;width:${BOX_W}px;text-align:center;">Champion</div>`;
+        `<div class="col-label" style="left:${col1X}px;width:${BOX_W}px;text-align:left;">Round 1</div>` +
+        `<div class="col-label" style="left:${col2X}px;width:${BOX_W}px;text-align:left;">Round 2</div>` +
+        `<div class="col-label" style="left:${finalX}px;width:${BOX_W}px;text-align:left;">Final</div>`;
 
       matches.forEach((match, i) => {
-        const top = y1[i] - BOX_H / 2, halfH = BOX_H / 2 - 1;
-        const pos1 = `left:${col1X}px;top:${top}px;width:${BOX_W}px;height:${halfH}px;`;
-        const pos2 = `left:${col1X}px;top:${top + BOX_H / 2 + 2}px;width:${BOX_W}px;height:${halfH}px;`;
+        const top = y1[i] - BOX_H / 2, halfH = BOX_H / 2;
+        const pos1 = `left:${col1X}px;top:${top}px;width:${BOX_W}px;height:${halfH}px;border-bottom:none;border-radius:8px 8px 0 0;`;
+        const pos2 = `left:${col1X}px;top:${top + BOX_H / 2}px;width:${BOX_W}px;height:${halfH}px;border-top:none;border-radius:0 0 8px 8px;`;
         boxesHtml += slotBox("doubles", 0, i, match.p1, match, gameOf[i]).replace("__POS__", pos1);
         boxesHtml += slotBox("doubles", 0, i, match.p2, match).replace("__POS__", pos2);
         if (unlocked && match.winner) {
@@ -1003,22 +995,19 @@
       else if (fp2 && finalWinnerName === fp2.name) finalWinner = fp2;
       const finalMatch = { winner: finalWinner, editable: !!(fp1 && fp2) };
 
-      const fTop = finalY - BOX_H / 2, fHalfH = BOX_H / 2 - 1;
-      boxesHtml += slotBox("doubles", "final", 0, fp1, finalMatch, GAME_ORDER.doublesFinal).replace("__POS__", `left:${finalX}px;top:${fTop}px;width:${BOX_W}px;height:${fHalfH}px;`);
-      boxesHtml += slotBox("doubles", "final", 0, fp2, finalMatch).replace("__POS__", `left:${finalX}px;top:${fTop + BOX_H / 2 + 2}px;width:${BOX_W}px;height:${fHalfH}px;`);
+      const fTop = finalY - BOX_H / 2, fHalfH = BOX_H / 2;
+      boxesHtml += slotBox("doubles", "final", 0, fp1, finalMatch, GAME_ORDER.doublesFinal, " final-slot").replace("__POS__", `left:${finalX}px;top:${fTop}px;width:${BOX_W}px;height:${fHalfH}px;border-bottom:none;border-radius:8px 8px 0 0;`);
+      boxesHtml += slotBox("doubles", "final", 0, fp2, finalMatch, null, " final-slot").replace("__POS__", `left:${finalX}px;top:${fTop + BOX_H / 2}px;width:${BOX_W}px;height:${fHalfH}px;border-top:none;border-radius:0 0 8px 8px;`);
       if (unlocked && finalMatch.winner) {
         boxesHtml += `<button class="clear-btn" title="Clear result" style="left:${finalX + BOX_W - 9}px;top:${finalY - 9}px;" onclick="window.__clear('doubles','final',0)">×</button>`;
       }
 
-      lines += `<line x1="${finalX + BOX_W}" y1="${finalY}" x2="${champX}" y2="${finalY}"/>`;
       const championName = finalMatch.winner ? finalMatch.winner.name : null;
-      const champCls = championName ? "slot champion decided" : "slot champion";
-      boxesHtml += `<div class="${champCls}" style="left:${champX}px;top:${finalY - BOX_H / 2}px;width:${BOX_W}px;height:${BOX_H}px;">${championName ? escapeHtml(championName) : "TBD"}</div>`;
 
       container.style.width = totalWidth + "px";
       container.style.height = totalHeight + "px";
       container.innerHTML =
-        `<svg width="${totalWidth}" height="${totalHeight}" viewBox="0 0 ${totalWidth} ${totalHeight}" role="img" aria-label="Connector lines from Round 1 through Round 2 into the Final and Champion">${lines}</svg>` +
+        `<svg width="${totalWidth}" height="${totalHeight}" viewBox="0 0 ${totalWidth} ${totalHeight}" role="img" aria-label="Connector lines from Round 1 through Round 2 into the Final">${lines}</svg>` +
         labelsHtml + boxesHtml;
       renderRoundSelector("round-selector-doubles", "bracket-scroll-doubles", [
         { x: col1X, label: "R1" },
@@ -1026,7 +1015,7 @@
         { x: finalX, label: "F" },
       ]);
 
-      maybeCelebrate("doubles", championName, () => container.querySelector(".slot.champion"));
+      maybeCelebrate("doubles", championName, () => container.querySelector(".final-slot.winner"));
     }
 
     async function saveRoundRobinScore(idx, value) {
@@ -1065,7 +1054,7 @@
       const rrGameOf = GAME_ORDER.doublesRoundRobin.gameOf;
       const rowsByOrder = RR_PAIRS.map((pair, idx) => ({ pair, idx })).sort((x, y) => rrRowOf[x.idx] - rrRowOf[y.idx]);
 
-      let html = `<div class="rr-card"><h3 class="rr-title">Round 2 — Round Robin (7pts tie break)</h3>`;
+      let html = `<div class="rr-card"><h3 class="rr-title">Round 2 — Round Robin</h3>`;
       rowsByOrder.forEach(({ pair: [a, b], idx }) => {
         const nameA = teams[a], nameB = teams[b];
         const raw = winners[`rr-${idx}`] || "";
@@ -1215,21 +1204,26 @@
     });
 
     // ---- Tabs ----
+    const tabIndicator = document.getElementById("tab-indicator");
+    function moveTabIndicator(tab) {
+      tabIndicator.style.left = tab.offsetLeft + "px";
+      tabIndicator.style.width = tab.offsetWidth + "px";
+    }
     document.querySelectorAll(".tab").forEach((tab) => {
       tab.addEventListener("click", () => {
         document.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", "false"));
         tab.setAttribute("aria-selected", "true");
         document.querySelectorAll(".panel").forEach((p) => p.removeAttribute("data-active"));
         document.getElementById(tab.getAttribute("aria-controls")).setAttribute("data-active", "true");
+        moveTabIndicator(tab);
       });
     });
+    moveTabIndicator(document.querySelector('.tab[aria-selected="true"]'));
 
     // ---- Unlock ----
     function setUnlocked(v) {
       unlocked = v;
       sessionStorage.setItem("tennisUnlocked", v ? "1" : "0");
-      document.getElementById("status-pill").textContent = v ? "Editing unlocked" : "Viewing only";
-      document.getElementById("status-pill").classList.toggle("on", v);
       document.getElementById("unlock-btn").style.display = v ? "none" : "";
       document.getElementById("pin-input").style.display = v ? "none" : "";
       document.getElementById("lock-btn").style.display = v ? "" : "none";
