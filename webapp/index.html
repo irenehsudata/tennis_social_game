@@ -886,8 +886,8 @@
 
       let boxesHtml = "", lines = "";
       let labelsHtml =
-        `<div class="col-label" style="left:${col1X}px;width:${BOX_W}px;text-align:center;">Round 1 (7-point tie break)</div>` +
-        `<div class="col-label" style="left:${col2X}px;width:${BOX_W}px;text-align:center;">Round 2 (7-point tie break)</div>` +
+        `<div class="col-label" style="left:${col1X}px;width:${BOX_W}px;text-align:center;">Round 1 (7pts tie break)</div>` +
+        `<div class="col-label" style="left:${col2X}px;width:${BOX_W}px;text-align:center;">Round 2 (7pts tie break)</div>` +
         `<div class="col-label" style="left:${finalX}px;width:${BOX_W}px;text-align:center;">Final (1 set)</div>` +
         `<div class="col-label" style="left:${champX}px;width:${BOX_W}px;text-align:center;">Champion</div>`;
 
@@ -984,7 +984,7 @@
       const rrGameOf = GAME_ORDER.doublesRoundRobin.gameOf;
       const rowsByOrder = RR_PAIRS.map((pair, idx) => ({ pair, idx })).sort((x, y) => rrRowOf[x.idx] - rrRowOf[y.idx]);
 
-      let html = `<div class="rr-card"><h3 class="rr-title">Round 2 — Round Robin (7 points tie break)</h3>`;
+      let html = `<div class="rr-card"><h3 class="rr-title">Round 2 — Round Robin (7pts tie break)</h3>`;
       rowsByOrder.forEach(({ pair: [a, b], idx }) => {
         const nameA = teams[a], nameB = teams[b];
         const raw = winners[`rr-${idx}`] || "";
