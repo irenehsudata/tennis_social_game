@@ -36,7 +36,7 @@
       background: var(--bg);
       color: var(--ink);
       font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      padding: 32px 24px 64px 12px;
+      padding: 32px 24px 64px 14px;
       overflow-x: hidden;
       width: 100%;
       position: relative;
@@ -139,13 +139,13 @@
       gap: 12px;
       margin-bottom: 6px;
       position: relative;
-      overflow: hidden;
+      overflow: visible;
     }
 
     .tennis-watermark {
       position: absolute;
-      bottom: -15px;
-      right: -5px;
+      bottom: -6px;
+      right: 0;
       width: 110px;
       height: 110px;
       z-index: 0;
@@ -325,7 +325,7 @@
     .tabs-row::after {
       content: "";
       position: absolute;
-      left: -12px;
+      left: -14px;
       right: -24px;
       bottom: 0;
       height: 3px;
@@ -404,9 +404,9 @@
 
     .bracket-scroll {
       overflow-x: auto;
-      padding: 10px 24px 8px 12px;
+      padding: 10px 24px 8px 14px;
       margin-top: 14px;
-      margin-left: -12px;
+      margin-left: -14px;
       margin-right: -24px;
       background: #14291A;
     }
@@ -460,7 +460,7 @@
       flex-direction: column;
       gap: 1px;
       line-height: 1.3;
-      font-size: 17px;
+      font-size: 14px;
       flex: 0 1 auto;
       min-width: 0;
       overflow: hidden;
@@ -577,9 +577,9 @@
       background: #12321C;
       border: none;
       border-radius: 0;
-      padding: 16px 24px 20px 12px;
+      padding: 16px 24px 20px 14px;
       margin-top: 0;
-      margin-left: -12px;
+      margin-left: -14px;
       margin-right: -24px;
     }
 
@@ -643,7 +643,7 @@
       flex: 0 0 auto;
       text-align: right;
       font: inherit;
-      font-size: 16px;
+      font-size: 13px;
       font-variant-numeric: tabular-nums;
       margin-right: 14px;
     }
@@ -1569,10 +1569,10 @@
     function moveTabIndicator(tab) {
       // One fixed width for every tab, sized so that when the leftmost tab is
       // active, its underline (centered under the text) reaches the page's true
-      // left edge — the page has 12px of left padding on either side of that
-      // tab's own center, so width = 2 * (12 + halfOfFirstTabWidth).
+      // left edge — the page has 14px of left padding on either side of that
+      // tab's own center, so width = 2 * (14 + halfOfFirstTabWidth).
       const firstTab = document.querySelector(".tab");
-      const fixedWidth = 24 + firstTab.offsetWidth;
+      const fixedWidth = 28 + firstTab.offsetWidth;
       const center = tab.offsetLeft + tab.offsetWidth / 2;
       tabIndicator.style.left = (center - fixedWidth / 2) + "px";
       tabIndicator.style.width = fixedWidth + "px";
