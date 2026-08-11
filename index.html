@@ -105,7 +105,7 @@
 
     .tennis-watermark {
       position: absolute;
-      bottom: -25px;
+      bottom: -15px;
       right: -5px;
       width: 110px;
       height: 110px;
@@ -416,7 +416,27 @@
       min-width: 0;
     }
 
+    .team-names {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      line-height: 1.3;
+      flex: 0 1 auto;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .team-name-line {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 400;
+    }
+
     .game-tag {
+      position: absolute;
+      top: 6px;
+      right: 8px;
       font-family: ui-monospace, "SF Mono", Menlo, monospace;
       font-variant-numeric: tabular-nums;
       font-size: 9px;
@@ -425,12 +445,13 @@
       border-radius: 50%;
       width: 16px;
       height: 16px;
-      display: inline-flex;
+      display: flex;
       align-items: center;
       justify-content: center;
       line-height: 1;
       padding: 0;
       flex-shrink: 0;
+      z-index: 1;
     }
 
     .slot.tbd {
@@ -535,12 +556,13 @@
     }
 
     .rr-box {
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 8px;
       width: 168px;
-      height: 40px;
+      height: 56px;
       padding: 0 12px;
       font-size: 14px;
       background: var(--surface);
@@ -580,7 +602,9 @@
       flex: 0 0 auto;
       text-align: right;
       font: inherit;
+      font-size: 16px;
       font-variant-numeric: tabular-nums;
+      margin-right: 14px;
     }
 
     .rr-score {
@@ -588,7 +612,6 @@
       border: none;
       background: transparent;
       color: #000000;
-      font-size: 16px;
     }
 
     .rr-score-view {
@@ -836,6 +859,14 @@
     }
     function key(r, i) { return `${r}-${i}`; }
 
+    // Doubles team names are stored as "Player A & Player B" — shown as two tight-
+    // spaced lines instead of one, so the two players read as a single team.
+    function teamNameHtml(name) {
+      const parts = name.split(" & ");
+      if (parts.length !== 2) return `<span class="name">${escapeHtml(name)}</span>`;
+      return `<span class="team-names"><span class="team-name-line">${escapeHtml(parts[0])}</span><span class="team-name-line">${escapeHtml(parts[1])}</span></span>`;
+    }
+
     // Locked-in random play order for each round with more than one simultaneous
     // game — one continuous "Game #" numbering per bracket, randomized within each
     // round but always increasing round over round. Each array lists ORIGINAL match
@@ -903,7 +934,15 @@
         if (sa > sb) stats[a].wins++;
         else if (sb > sa) stats[b].wins++;
       });
-      const order = [0, 1, 2].sort((x, y) => stats[y].wins - stats[x].wins || stats[x].pointsLost - stats[y].pointsLost);
+      // Before any round-robin scores are in, every team is tied at 0-0 — rank by
+      // who reached Round 2 first (their Round 1 game order) instead of leaving it
+      // to array-index luck, and keep any still-undecided team below the rest.
+      const rowOf = GAME_ORDER.doublesRound1.rowOf;
+      const order = [0, 1, 2].sort((x, y) => {
+        const xKnown = teams[x] ? 1 : 0, yKnown = teams[y] ? 1 : 0;
+        if (xKnown !== yKnown) return yKnown - xKnown;
+        return stats[y].wins - stats[x].wins || stats[x].pointsLost - stats[y].pointsLost || rowOf[x] - rowOf[y];
+      });
       return { stats, order, allDecided };
     }
 
@@ -1040,8 +1079,9 @@
       const onclick = pickable ? `onclick="window.__pick('${bId}','${r}',${i},'${encodeURIComponent(slot.name)}')"` : "";
       const tag = gameNumber ? `<span class="game-tag">G${gameNumber}</span>` : "";
       const isChampion = isPlayedWin && finalCls.includes("final-slot");
-      const name = isChampion ? `🏆 ${escapeHtml(slot.name)} 🏆` : escapeHtml(slot.name);
-      return `<div class="${cls}" style="__POS__" ${onclick}><span class="name">${name}</span>${tag}</div>`;
+      const nameHtml = bId === "doubles" ? teamNameHtml(slot.name) : `<span class="name">${escapeHtml(slot.name)}</span>`;
+      const wrapped = isChampion ? `${nameHtml} 🏆` : nameHtml;
+      return `<div class="${cls}" style="__POS__" ${onclick}>${wrapped}${tag}</div>`;
     }
 
     // Singles is the only bracket that still uses the generic round-to-round chain
@@ -1176,12 +1216,17 @@
       const rrGameOf = GAME_ORDER.doublesRoundRobin.gameOf;
       const rowsByOrder = RR_PAIRS.map((pair, idx) => ({ pair, idx })).sort((x, y) => rrRowOf[x.idx] - rrRowOf[y.idx]);
 
-      const y1 = matches.map((_, i) => TOP_PAD + rowOf[i] * ROW_UNIT + BOX_H / 2);
-      const totalHeight = TOP_PAD * 2 + (matches.length - 1) * ROW_UNIT + BOX_H;
+      // Doubles boxes need to be taller than singles' — each slot shows a team's two
+      // player names stacked instead of one name — so these are local to this function
+      // rather than the shared BOX_H/ROW_UNIT singles also uses.
+      const teamSlotH = 56, matchH = teamSlotH * 2, doublesRowUnit = matchH + 28;
+
+      const y1 = matches.map((_, i) => TOP_PAD + rowOf[i] * doublesRowUnit + matchH / 2);
+      const totalHeight = TOP_PAD * 2 + (matches.length - 1) * doublesRowUnit + matchH;
       const col1X = 0, col2X = colX(1), finalX = colX(2);
       // The middle row position, independent of which match landed there after
       // reordering — Final isn't a fixed pair of Round-2 slots, so it just sits centered.
-      const finalY = TOP_PAD + Math.floor((matches.length - 1) / 2) * ROW_UNIT + BOX_H / 2;
+      const finalY = TOP_PAD + Math.floor((matches.length - 1) / 2) * doublesRowUnit + matchH / 2;
       const scrollerWidthDoubles = document.getElementById("bracket-scroll-doubles").clientWidth || window.innerWidth;
       const totalWidth = finalX + BOX_W + Math.max(0, scrollerWidthDoubles - BOX_W);
 
@@ -1194,9 +1239,9 @@
         `<div class="col-label" style="left:${finalX}px;width:${BOX_W}px;text-align:left;">Final</div>`;
 
       matches.forEach((match, i) => {
-        const top = y1[i] - BOX_H / 2, halfH = BOX_H / 2;
-        const pos1 = `left:${col1X}px;top:${top}px;width:${BOX_W}px;height:${halfH}px;border-bottom:none;border-radius:4px 4px 0 0;`;
-        const pos2 = `left:${col1X}px;top:${top + BOX_H / 2}px;width:${BOX_W}px;height:${halfH}px;border-top:none;border-radius:0 0 4px 4px;`;
+        const top = y1[i] - matchH / 2;
+        const pos1 = `left:${col1X}px;top:${top}px;width:${BOX_W}px;height:${teamSlotH}px;border-bottom:none;border-radius:4px 4px 0 0;`;
+        const pos2 = `left:${col1X}px;top:${top + teamSlotH}px;width:${BOX_W}px;height:${teamSlotH}px;border-top:none;border-radius:0 0 4px 4px;`;
         boxesHtml += slotBox("doubles", 0, i, match.p1, match, gameOf[i]).replace("__POS__", pos1);
         boxesHtml += slotBox("doubles", 0, i, match.p2, match).replace("__POS__", pos2);
         if (unlocked && match.winner) {
@@ -1208,31 +1253,40 @@
       // editable score box pair — not a passthrough, since round robin has no single
       // "opponent" per Round-1 winner the way a bracket round would.
       rowsByOrder.forEach(({ pair: [a, b], idx }) => {
-        const rowTop = TOP_PAD + rrRowOf[idx] * ROW_UNIT;
+        const rowTop = TOP_PAD + rrRowOf[idx] * doublesRowUnit;
         const nameA = teams[a], nameB = teams[b];
         const raw = winners[`rr-${idx}`] || "";
         const m = /^(\d+)-(\d+)$/.exec(raw);
         const scoreA = m ? m[1] : "", scoreB = m ? m[2] : "";
         const canEdit = unlocked && nameA && nameB;
         const scoreCell = (side, val) => canEdit
-          ? `<input class="rr-score" type="number" min="0" inputmode="numeric" data-idx="${idx}" data-side="${side}" value="${val}" />`
+          ? `<input class="rr-score" type="number" min="0" inputmode="numeric" data-idx="${idx}" data-side="${side}" value="${val || "0"}" />`
           : `<span class="rr-score-view">${val || "0"}</span>`;
         boxesHtml += `<div class="rr-match" style="position:absolute;left:${col2X}px;top:${rowTop}px;width:${BOX_W}px;">
           <div class="rr-box rr-box-top">
-            <span class="rr-name-group">
-              <span class="rr-team">${nameA ? escapeHtml(nameA) : '<span class="tbd-text">TBD</span>'}</span>
-              <span class="game-tag">G${rrGameOf[idx]}</span>
-            </span>
+            <span class="game-tag">G${rrGameOf[idx]}</span>
+            <span class="rr-name-group">${nameA ? teamNameHtml(nameA) : '<span class="tbd-text">TBD</span>'}</span>
             ${scoreCell("a", scoreA)}
           </div>
           <div class="rr-box rr-box-bottom">
-            <span class="rr-name-group">
-              <span class="rr-team">${nameB ? escapeHtml(nameB) : '<span class="tbd-text">TBD</span>'}</span>
-            </span>
+            <span class="rr-name-group">${nameB ? teamNameHtml(nameB) : '<span class="tbd-text">TBD</span>'}</span>
             ${scoreCell("b", scoreB)}
           </div>
         </div>`;
       });
+
+      // All three Round 2 matches feed into the same Final, so their connector
+      // lines gather onto one shared vertical bus before continuing as a single
+      // line — same merge pattern as the singles preliminary-round side branch.
+      {
+        const xChild = col2X + BOX_W, xMid = xChild + ROUND_GAP / 2, xParent = finalX;
+        const rowCenters = rowsByOrder.map(({ idx }) => TOP_PAD + rrRowOf[idx] * doublesRowUnit + matchH / 2);
+        rowCenters.forEach((cy) => {
+          lines += `<line x1="${xChild}" y1="${cy}" x2="${xMid}" y2="${cy}"/>`;
+        });
+        lines += `<line x1="${xMid}" y1="${Math.min(...rowCenters)}" x2="${xMid}" y2="${Math.max(...rowCenters)}"/>`;
+        lines += `<line x1="${xMid}" y1="${finalY}" x2="${xParent}" y2="${finalY}"/>`;
+      }
 
       const finalist1 = allDecided ? teams[order[0]] : null;
       const finalist2 = allDecided ? teams[order[1]] : null;
@@ -1244,9 +1298,9 @@
       else if (fp2 && finalWinnerName === fp2.name) finalWinner = fp2;
       const finalMatch = { winner: finalWinner, editable: !!(fp1 && fp2) };
 
-      const fTop = finalY - BOX_H / 2, fHalfH = BOX_H / 2;
-      boxesHtml += slotBox("doubles", "final", 0, fp1, finalMatch, GAME_ORDER.doublesFinal, " final-slot").replace("__POS__", `left:${finalX}px;top:${fTop}px;width:${BOX_W}px;height:${fHalfH}px;border-bottom:none;border-radius:4px 4px 0 0;`);
-      boxesHtml += slotBox("doubles", "final", 0, fp2, finalMatch, null, " final-slot").replace("__POS__", `left:${finalX}px;top:${fTop + BOX_H / 2}px;width:${BOX_W}px;height:${fHalfH}px;border-top:none;border-radius:0 0 4px 4px;`);
+      const fTop = finalY - matchH / 2;
+      boxesHtml += slotBox("doubles", "final", 0, fp1, finalMatch, GAME_ORDER.doublesFinal, " final-slot").replace("__POS__", `left:${finalX}px;top:${fTop}px;width:${BOX_W}px;height:${teamSlotH}px;border-bottom:none;border-radius:4px 4px 0 0;`);
+      boxesHtml += slotBox("doubles", "final", 0, fp2, finalMatch, null, " final-slot").replace("__POS__", `left:${finalX}px;top:${fTop + teamSlotH}px;width:${BOX_W}px;height:${teamSlotH}px;border-top:none;border-radius:0 0 4px 4px;`);
       if (unlocked && finalMatch.winner) {
         boxesHtml += `<button class="clear-btn" title="Clear result" style="left:${finalX + BOX_W - 9}px;top:${finalY - 9}px;" onclick="window.__clear('doubles','final',0)">×</button>`;
       }
@@ -1437,17 +1491,15 @@
     // ---- Tabs ----
     const tabIndicator = document.getElementById("tab-indicator");
     function moveTabIndicator(tab) {
-      const tabs = [...document.querySelectorAll(".tab")];
-      const i = tabs.indexOf(tab);
-      const edgeExtend = 12;
-      const left = i === 0
-        ? -edgeExtend
-        : (tabs[i - 1].offsetLeft + tabs[i - 1].offsetWidth + tab.offsetLeft) / 2;
-      const right = i === tabs.length - 1
-        ? tab.offsetLeft + tab.offsetWidth
-        : (tab.offsetLeft + tab.offsetWidth + tabs[i + 1].offsetLeft) / 2;
-      tabIndicator.style.left = left + "px";
-      tabIndicator.style.width = (right - left) + "px";
+      // One fixed width for every tab, sized so that when the leftmost tab is
+      // active, its underline (centered under the text) reaches the page's true
+      // left edge — the page has 12px of left padding on either side of that
+      // tab's own center, so width = 2 * (12 + halfOfFirstTabWidth).
+      const firstTab = document.querySelector(".tab");
+      const fixedWidth = 24 + firstTab.offsetWidth;
+      const center = tab.offsetLeft + tab.offsetWidth / 2;
+      tabIndicator.style.left = (center - fixedWidth / 2) + "px";
+      tabIndicator.style.width = fixedWidth + "px";
     }
     document.querySelectorAll(".tab").forEach((tab) => {
       tab.addEventListener("click", () => {
