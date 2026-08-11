@@ -26,9 +26,10 @@ Still in Firestore Database:
 
 1. In Firestore Database, click the **Rules** tab.
 2. Delete the existing content and paste in everything from `firestore.rules` (in this folder).
-3. Click **Publish**.
+3. Replace `__SHARED_PIN__` with your real PIN (must match `SHARED_PIN` in Netlify's environment variables — see below).
+4. Click **Publish**.
 
-This makes the bracket readable by anyone with the link, but only editable by someone who knows the PIN (`0815`).
+This makes the bracket readable by anyone with the link, but only editable by someone who knows the PIN. The placeholder here is intentional — this repo is public, so the real PIN only ever lives in Netlify's environment variables and directly in Firebase's Rules editor, never committed to git.
 
 ## 4. Get your web app config
 
@@ -47,8 +48,17 @@ Easiest free option, no account needed:
 
 To update later (e.g. after changing the PIN or config), just drag the folder again — same trick, though the URL changes each time unless you make a free Netlify account and claim the site so it keeps one permanent URL.
 
-## Changing the PIN later
+## Changing the PIN or site password later
 
-It's the same value in two places — change both and republish:
-- `firestore.rules` → the `"0815"` in the rules, then re-publish via the Rules tab.
-- `index.html` → the `SHARED_PIN` constant near the top of the script.
+`index.html` no longer has the real values in it — it has placeholders
+(`__SHARED_PIN__`, `__SITE_PASSWORD__`) that `build.js` fills in at deploy
+time, so the real values never sit in this public repo's git history.
+
+To change either one:
+- **Netlify**: Site settings → Environment variables → edit `SHARED_PIN` and/or
+  `SITE_PASSWORD` → trigger a new deploy (or just push any commit).
+- **Local testing**: edit the gitignored `.env` file in this folder (same two
+  keys), then run `node build.js` and open `dist/index.html`.
+- **Firestore write rule**: `firestore.rules` still has `"0815"` hardcoded —
+  if you change `SHARED_PIN`, update it there too and re-publish via the
+  Rules tab, or edits won't save.

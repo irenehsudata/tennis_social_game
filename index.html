@@ -625,13 +625,19 @@
     } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
     // ---- Site-wide password gate ----
-    const SITE_PASSWORD = "2026";
+    const SITE_PASSWORD = "__SITE_PASSWORD__";
     const siteGate = document.getElementById("site-gate");
     const pageContent = document.getElementById("page-content");
     function unlockSite() {
       sessionStorage.setItem("siteUnlocked", "1");
       siteGate.hidden = true;
       pageContent.hidden = false;
+      // Deferred: the tabs were display:none behind the gate until just now, so
+      // any earlier width/position measurement of them would have read as zero.
+      setTimeout(() => {
+        const activeTab = document.querySelector('.tab[aria-selected="true"]');
+        if (activeTab && typeof moveTabIndicator === "function") moveTabIndicator(activeTab);
+      }, 0);
     }
     if (sessionStorage.getItem("siteUnlocked") === "1") {
       unlockSite();
@@ -663,7 +669,7 @@
       measurementId: "G-TDPVJVQQ5X",
     };
 
-    const SHARED_PIN = "0815";
+    const SHARED_PIN = "__SHARED_PIN__";
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
