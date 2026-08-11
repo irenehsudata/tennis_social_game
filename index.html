@@ -878,16 +878,21 @@
           const btnRect = document.getElementById("site-gate-btn").getBoundingClientRect();
           const cx = btnRect.left + btnRect.width / 2;
           const cy = btnRect.top + btnRect.height / 2;
+          // Use screen.width/height (not just window.innerWidth/innerHeight) so the
+          // circle still fully covers the viewport if the mobile browser's address
+          // bar collapses mid-animation and reveals more height than we measured.
+          const viewW = Math.max(window.innerWidth, screen.width);
+          const viewH = Math.max(window.innerHeight, screen.height);
           const maxDist = Math.max(
             Math.hypot(cx, cy),
-            Math.hypot(window.innerWidth - cx, cy),
-            Math.hypot(cx, window.innerHeight - cy),
-            Math.hypot(window.innerWidth - cx, window.innerHeight - cy)
+            Math.hypot(viewW - cx, cy),
+            Math.hypot(cx, viewH - cy),
+            Math.hypot(viewW - cx, viewH - cy)
           );
           const transition = document.getElementById("site-gate-transition");
           transition.style.left = (cx - 28) + "px";
           transition.style.top = (cy - 28) + "px";
-          transition.style.setProperty("--expand-scale", (maxDist + 20) / 28);
+          transition.style.setProperty("--expand-scale", (maxDist + 60) / 28);
           transition.classList.add("expand");
           setTimeout(unlockSite, 700);
         } else {
