@@ -98,10 +98,10 @@
 
     .tennis-watermark {
       position: absolute;
-      bottom: -30px;
-      right: -10px;
-      width: 160px;
-      height: 160px;
+      bottom: -25px;
+      right: -5px;
+      width: 110px;
+      height: 110px;
       z-index: 0;
       pointer-events: none;
     }
@@ -333,7 +333,7 @@
       border: none;
       background: var(--surface);
       color: #000000;
-      border-radius: 8px;
+      border-radius: 4px;
       padding: 0 12px;
       font-size: 14px;
       white-space: nowrap;
@@ -493,11 +493,11 @@
     }
 
     .rr-box-top {
-      border-radius: 8px 8px 0 0;
+      border-radius: 4px 4px 0 0;
     }
 
     .rr-box-bottom {
-      border-radius: 0 0 8px 8px;
+      border-radius: 0 0 4px 4px;
     }
 
     .rr-team {
@@ -599,18 +599,21 @@
     <header class="top" style="margin-bottom: 20px;">
       <svg class="tennis-watermark" viewBox="0 0 100 100" aria-hidden="true">
         <circle cx="50" cy="50" r="48" fill="var(--surface-alt)" opacity="0.55" />
-        <path d="M50 2 C 20 15, 15 40, 20 60 C 25 85, 55 90, 70 65 C 80 50, 90 46, 98 48" stroke="#FFFFFF" stroke-width="4" fill="none" opacity="0.8" />
+        <path d="M50 2 C 20 15, 15 40, 20 60 C 25 85, 55 90, 70 65 C 80 50, 90 46, 98 48" stroke="#FFFFFF"
+          stroke-width="4" fill="none" opacity="0.8" />
       </svg>
       <h1>Tennis Social Game Draw</h1>
       <p class="event-meta">
-        <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          aria-hidden="true">
           <path d="M12 21s-7-6.5-7-11.5A7 7 0 0 1 19 9.5C19 14.5 12 21 12 21z" />
           <circle cx="12" cy="9.5" r="2.5" />
         </svg>
         Poplar Recreation Ground Tennis Court
       </p>
       <p class="event-meta">
-        <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          aria-hidden="true">
           <rect x="3" y="5" width="18" height="16" rx="2" />
           <path d="M8 3v4M16 3v4M3 9h18" />
         </svg>
@@ -620,29 +623,28 @@
 
     <div class="tabs-row">
       <div class="tabs" role="tablist" aria-label="Bracket selector">
-        <button class="tab" role="tab" id="tab-doubles" aria-controls="panel-doubles"
-          aria-selected="true">Doubles</button>
         <button class="tab" role="tab" id="tab-singles" aria-controls="panel-singles"
-          aria-selected="false">Singles</button>
-        <button class="tab" role="tab" id="tab-rules" aria-controls="panel-rules"
-          aria-selected="false">Rules</button>
+          aria-selected="true">Singles</button>
+        <button class="tab" role="tab" id="tab-doubles" aria-controls="panel-doubles"
+          aria-selected="false">Doubles</button>
+        <button class="tab" role="tab" id="tab-rules" aria-controls="panel-rules" aria-selected="false">Rules</button>
         <span class="tab-indicator" id="tab-indicator"></span>
       </div>
     </div>
 
-    <section class="panel" id="panel-doubles" role="tabpanel" aria-labelledby="tab-doubles" data-active="true">
+    <section class="panel" id="panel-singles" role="tabpanel" aria-labelledby="tab-singles" data-active="true">
+      <div class="round-selector" id="round-selector-singles"></div>
+      <div class="bracket-scroll" id="bracket-scroll-singles">
+        <div id="bracket-singles" class="bracket-wrap"></div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-doubles" role="tabpanel" aria-labelledby="tab-doubles">
       <div class="round-selector" id="round-selector-doubles"></div>
       <div class="bracket-scroll" id="bracket-scroll-doubles">
         <div id="bracket-doubles" class="bracket-wrap"></div>
       </div>
       <div id="doubles-stage2"></div>
-    </section>
-
-    <section class="panel" id="panel-singles" role="tabpanel" aria-labelledby="tab-singles">
-      <div class="round-selector" id="round-selector-singles"></div>
-      <div class="bracket-scroll" id="bracket-scroll-singles">
-        <div id="bracket-singles" class="bracket-wrap"></div>
-      </div>
     </section>
 
     <section class="panel" id="panel-rules" role="tabpanel" aria-labelledby="tab-rules">
@@ -1006,8 +1008,8 @@
         const top = yCenter - BOX_H / 2;
         const halfH = BOX_H / 2;
         const finalCls = r === rounds.length - 1 ? " final-slot" : "";
-        const pos1 = `left:${x}px;top:${top}px;width:${BOX_W}px;height:${halfH}px;border-bottom:none;border-radius:8px 8px 0 0;`;
-        const pos2 = `left:${x}px;top:${top + BOX_H / 2}px;width:${BOX_W}px;height:${halfH}px;border-top:none;border-radius:0 0 8px 8px;`;
+        const pos1 = `left:${x}px;top:${top}px;width:${BOX_W}px;height:${halfH}px;border-bottom:none;border-radius:4px 4px 0 0;`;
+        const pos2 = `left:${x}px;top:${top + BOX_H / 2}px;width:${BOX_W}px;height:${halfH}px;border-top:none;border-radius:0 0 4px 4px;`;
         boxesHtml += slotBox(bId, r, i, match.p1, match, gameNumber, finalCls).replace("__POS__", pos1);
         boxesHtml += slotBox(bId, r, i, match.p2, match, null, finalCls).replace("__POS__", pos2);
         if (unlocked && match.winner) {
@@ -1100,8 +1102,8 @@
 
       matches.forEach((match, i) => {
         const top = y1[i] - BOX_H / 2, halfH = BOX_H / 2;
-        const pos1 = `left:${col1X}px;top:${top}px;width:${BOX_W}px;height:${halfH}px;border-bottom:none;border-radius:8px 8px 0 0;`;
-        const pos2 = `left:${col1X}px;top:${top + BOX_H / 2}px;width:${BOX_W}px;height:${halfH}px;border-top:none;border-radius:0 0 8px 8px;`;
+        const pos1 = `left:${col1X}px;top:${top}px;width:${BOX_W}px;height:${halfH}px;border-bottom:none;border-radius:4px 4px 0 0;`;
+        const pos2 = `left:${col1X}px;top:${top + BOX_H / 2}px;width:${BOX_W}px;height:${halfH}px;border-top:none;border-radius:0 0 4px 4px;`;
         boxesHtml += slotBox("doubles", 0, i, match.p1, match, gameOf[i]).replace("__POS__", pos1);
         boxesHtml += slotBox("doubles", 0, i, match.p2, match).replace("__POS__", pos2);
         if (unlocked && match.winner) {
@@ -1135,8 +1137,8 @@
       const finalMatch = { winner: finalWinner, editable: !!(fp1 && fp2) };
 
       const fTop = finalY - BOX_H / 2, fHalfH = BOX_H / 2;
-      boxesHtml += slotBox("doubles", "final", 0, fp1, finalMatch, GAME_ORDER.doublesFinal, " final-slot").replace("__POS__", `left:${finalX}px;top:${fTop}px;width:${BOX_W}px;height:${fHalfH}px;border-bottom:none;border-radius:8px 8px 0 0;`);
-      boxesHtml += slotBox("doubles", "final", 0, fp2, finalMatch, null, " final-slot").replace("__POS__", `left:${finalX}px;top:${fTop + BOX_H / 2}px;width:${BOX_W}px;height:${fHalfH}px;border-top:none;border-radius:0 0 8px 8px;`);
+      boxesHtml += slotBox("doubles", "final", 0, fp1, finalMatch, GAME_ORDER.doublesFinal, " final-slot").replace("__POS__", `left:${finalX}px;top:${fTop}px;width:${BOX_W}px;height:${fHalfH}px;border-bottom:none;border-radius:4px 4px 0 0;`);
+      boxesHtml += slotBox("doubles", "final", 0, fp2, finalMatch, null, " final-slot").replace("__POS__", `left:${finalX}px;top:${fTop + BOX_H / 2}px;width:${BOX_W}px;height:${fHalfH}px;border-top:none;border-radius:0 0 4px 4px;`);
       if (unlocked && finalMatch.winner) {
         boxesHtml += `<button class="clear-btn" title="Clear result" style="left:${finalX + BOX_W - 9}px;top:${finalY - 9}px;" onclick="window.__clear('doubles','final',0)">×</button>`;
       }
