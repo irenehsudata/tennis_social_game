@@ -1077,11 +1077,14 @@
     // Round 1 (real matches) → Round 2 (a straight 1-for-1 passthrough box per team —
     // no opponent shown, since Round 2 is a round robin, not a bracket pairing) →
     // Final (data-driven: whichever 2 teams top the Round 2 standings) → Champion.
-    function renderDoublesBoxes(matches, teams, standings) {
+    function renderDoublesBoxes(matches, teams, standings, winners) {
       const container = document.getElementById("bracket-doubles");
       const { order, allDecided } = standings;
       const rowOf = GAME_ORDER.doublesRound1.rowOf;
       const gameOf = GAME_ORDER.doublesRound1.gameOf;
+      const rrRowOf = GAME_ORDER.doublesRoundRobin.rowOf;
+      const rrGameOf = GAME_ORDER.doublesRoundRobin.gameOf;
+      const rowsByOrder = RR_PAIRS.map((pair, idx) => ({ pair, idx })).sort((x, y) => rrRowOf[x.idx] - rrRowOf[y.idx]);
 
       const y1 = matches.map((_, i) => TOP_PAD + rowOf[i] * ROW_UNIT + BOX_H / 2);
       const totalHeight = TOP_PAD * 2 + (matches.length - 1) * ROW_UNIT + BOX_H;
@@ -1109,21 +1112,36 @@
         if (unlocked && match.winner) {
           boxesHtml += `<button class="clear-btn" title="Clear result" style="left:${col1X + BOX_W - 9}px;top:${y1[i] - 9}px;" onclick="window.__clearDoublesR1(${i})">×</button>`;
         }
+      });
 
-        // Round 2: single full-height box, straight passthrough line, no opponent.
-        const r2Top = y1[i] - BOX_H / 2;
-        const r2Slot = match.winner ? { name: match.winner.name } : null;
-        const r2Match = { winner: r2Slot, editable: false };
-        boxesHtml += slotBox("doubles", 1, i, r2Slot, r2Match).replace("__POS__", `left:${col2X}px;top:${r2Top}px;width:${BOX_W}px;height:${BOX_H}px;`);
-        if (match.winner) {
-          lines += `<line x1="${col1X + BOX_W}" y1="${y1[i]}" x2="${col2X}" y2="${y1[i]}"/>`;
-        }
-
-        // Diagonal into the Final for every team that's reached Round 2 — the box
-        // itself only fills in once the standings actually decide who's through.
-        if (match.winner) {
-          lines += `<line x1="${col2X + BOX_W}" y1="${y1[i]}" x2="${finalX}" y2="${finalY}"/>`;
-        }
+      // Round 2: the round-robin matches themselves (G4-G6), one per row, each an
+      // editable score box pair — not a passthrough, since round robin has no single
+      // "opponent" per Round-1 winner the way a bracket round would.
+      rowsByOrder.forEach(({ pair: [a, b], idx }) => {
+        const rowTop = y1[idx] - BOX_H / 2;
+        const nameA = teams[a], nameB = teams[b];
+        const raw = winners[`rr-${idx}`] || "";
+        const m = /^(\d+)-(\d+)$/.exec(raw);
+        const scoreA = m ? m[1] : "", scoreB = m ? m[2] : "";
+        const canEdit = unlocked && nameA && nameB;
+        const scoreCell = (side, val) => canEdit
+          ? `<input class="rr-score" type="number" min="0" inputmode="numeric" data-idx="${idx}" data-side="${side}" value="${val}" />`
+          : `<span class="rr-score-view">${val || "0"}</span>`;
+        boxesHtml += `<div class="rr-match" style="position:absolute;left:${col2X}px;top:${rowTop}px;width:${BOX_W}px;">
+          <div class="rr-box rr-box-top">
+            <span class="rr-name-group">
+              <span class="rr-team">${nameA ? escapeHtml(nameA) : '<span class="tbd-text">TBD</span>'}</span>
+              <span class="game-tag">G${rrGameOf[idx]}</span>
+            </span>
+            ${scoreCell("a", scoreA)}
+          </div>
+          <div class="rr-box rr-box-bottom">
+            <span class="rr-name-group">
+              <span class="rr-team">${nameB ? escapeHtml(nameB) : '<span class="tbd-text">TBD</span>'}</span>
+            </span>
+            ${scoreCell("b", scoreB)}
+          </div>
+        </div>`;
       });
 
       const finalist1 = allDecided ? teams[order[0]] : null;
@@ -1155,6 +1173,20 @@
         { x: col2X, label: "R2" },
         { x: finalX, label: "F" },
       ]);
+      container.querySelectorAll(".rr-score").forEach((input) => {
+        input.addEventListener("change", () => {
+          const idx = input.dataset.idx;
+          const a = container.querySelector(`.rr-score[data-idx="${idx}"][data-side="a"]`);
+          const b = container.querySelector(`.rr-score[data-idx="${idx}"][data-side="b"]`);
+          const av = a.value.trim(), bv = b.value.trim();
+          if (av === "" || bv === "") return;
+          if (!/^\d+$/.test(av) || !/^\d+$/.test(bv)) {
+            alert("Enter whole numbers for the score.");
+            return;
+          }
+          saveRoundRobinScore(idx, `${av}-${bv}`);
+        });
+      });
 
       maybeCelebrate("doubles", championName, () => container.querySelector(".final-slot.winner"));
     }
@@ -1185,42 +1217,13 @@
       }
     }
 
-    // The score-entry card: who plays whom in the round robin, their scores, and the
-    // live standings. The bracket-box view above is the canonical place Final and
-    // Champion live, so this card sticks to just Round 2's own results.
-    function renderDoublesStage2(teams, winners, standings) {
+    // The standings card: who's ranked where in the round robin. The score-entry
+    // boxes themselves live in the Round 2 column of the tree map above.
+    function renderDoublesStandings(teams, standings) {
       const container = document.getElementById("doubles-stage2");
       const { stats, order } = standings;
-      const rrRowOf = GAME_ORDER.doublesRoundRobin.rowOf;
-      const rrGameOf = GAME_ORDER.doublesRoundRobin.gameOf;
-      const rowsByOrder = RR_PAIRS.map((pair, idx) => ({ pair, idx })).sort((x, y) => rrRowOf[x.idx] - rrRowOf[y.idx]);
 
       let html = `<div class="rr-card"><h3 class="rr-title">Round 2 — Round Robin</h3>`;
-      rowsByOrder.forEach(({ pair: [a, b], idx }) => {
-        const nameA = teams[a], nameB = teams[b];
-        const raw = winners[`rr-${idx}`] || "";
-        const m = /^(\d+)-(\d+)$/.exec(raw);
-        const scoreA = m ? m[1] : "", scoreB = m ? m[2] : "";
-        const canEdit = unlocked && nameA && nameB;
-        const scoreCell = (side, val) => canEdit
-          ? `<input class="rr-score" type="number" min="0" inputmode="numeric" data-idx="${idx}" data-side="${side}" value="${val}" />`
-          : `<span class="rr-score-view">${val || "0"}</span>`;
-        html += `<div class="rr-match">
-          <div class="rr-box rr-box-top">
-            <span class="rr-name-group">
-              <span class="rr-team">${nameA ? escapeHtml(nameA) : '<span class="tbd-text">TBD</span>'}</span>
-              <span class="game-tag">G${rrGameOf[idx]}</span>
-            </span>
-            ${scoreCell("a", scoreA)}
-          </div>
-          <div class="rr-box rr-box-bottom">
-            <span class="rr-name-group">
-              <span class="rr-team">${nameB ? escapeHtml(nameB) : '<span class="tbd-text">TBD</span>'}</span>
-            </span>
-            ${scoreCell("b", scoreB)}
-          </div>
-        </div>`;
-      });
       html += `<table class="rr-standings"><thead><tr><th>Rank</th><th>Team</th><th>W</th><th>Pts lost</th></tr></thead><tbody>`;
       order.forEach((idx, rank) => {
         const name = teams[idx];
@@ -1234,20 +1237,6 @@
       html += `</tbody></table></div>`;
 
       container.innerHTML = html;
-      container.querySelectorAll(".rr-score").forEach((input) => {
-        input.addEventListener("change", () => {
-          const idx = input.dataset.idx;
-          const a = container.querySelector(`.rr-score[data-idx="${idx}"][data-side="a"]`);
-          const b = container.querySelector(`.rr-score[data-idx="${idx}"][data-side="b"]`);
-          const av = a.value.trim(), bv = b.value.trim();
-          if (av === "" || bv === "") return;
-          if (!/^\d+$/.test(av) || !/^\d+$/.test(bv)) {
-            alert("Enter whole numbers for the score.");
-            return;
-          }
-          saveRoundRobinScore(idx, `${av}-${bv}`);
-        });
-      });
     }
 
     function renderDoublesBracket() {
@@ -1255,8 +1244,8 @@
       const matches = buildRoundOfSix(names, winners);
       const teams = matches.map((m) => (m.winner ? m.winner.name : null));
       const standings = computeStandings(teams, winners);
-      renderDoublesBoxes(matches, teams, standings);
-      renderDoublesStage2(teams, winners, standings);
+      renderDoublesBoxes(matches, teams, standings, winners);
+      renderDoublesStandings(teams, standings);
     }
 
     function renderAll() {
