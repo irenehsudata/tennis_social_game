@@ -544,6 +544,11 @@
       font-variant-numeric: tabular-nums;
     }
 
+    .rr-standings th:first-child,
+    .rr-standings td:first-child {
+      padding-left: 0;
+    }
+
     .rr-standings th:not(:nth-child(1)):not(:nth-child(2)),
     .rr-standings td:not(:nth-child(1)):not(:nth-child(2)) {
       text-align: center;
@@ -768,8 +773,14 @@
       return { rowOf, gameOf, displayOrder };
     }
     const GAME_ORDER = {
-      doublesRound1: orderOf([1, 0, 2], 0),       // games 1-3 — match 1 (Joy & Annie v Bruce Wong & Jean) is Game 1
-      doublesRoundRobin: orderOf([1, 0, 2], 3),  // games 4-6
+      // games 1-3 — match 1 (Joy & Annie v Bruce Wong & Jean) is Game 1, match 2
+      // (Zack & Light v Ares & Bruce) is Game 2, match 0 (Irene & Mia v Evelyn &
+      // Brian Chang) is Game 3 last.
+      doublesRound1: orderOf([1, 2, 0], 0),
+      // games 4-6 — RR_PAIRS[2] ([1,2], the two teams that DIDN'T just play Game 3)
+      // goes first as Game 4, so match 0's winner gets a full game's rest before
+      // playing back-to-back in Games 5-6.
+      doublesRoundRobin: orderOf([2, 0, 1], 3),
       doublesFinal: 7,
       singlesPrelim: orderOf([0, 1], 0),         // games 1-2
       // Match index 3 is the two Preliminary Round winners playing each other — kept
@@ -1118,7 +1129,7 @@
       // editable score box pair — not a passthrough, since round robin has no single
       // "opponent" per Round-1 winner the way a bracket round would.
       rowsByOrder.forEach(({ pair: [a, b], idx }) => {
-        const rowTop = y1[idx] - BOX_H / 2;
+        const rowTop = TOP_PAD + rrRowOf[idx] * ROW_UNIT;
         const nameA = teams[a], nameB = teams[b];
         const raw = winners[`rr-${idx}`] || "";
         const m = /^(\d+)-(\d+)$/.exec(raw);
@@ -1222,6 +1233,11 @@
     function renderDoublesStandings(teams, standings) {
       const container = document.getElementById("doubles-stage2");
       const { stats, order } = standings;
+
+      if (!teams.some(Boolean)) {
+        container.innerHTML = "";
+        return;
+      }
 
       let html = `<div class="rr-card"><h3 class="rr-title">Round 2 — Round Robin</h3>`;
       html += `<table class="rr-standings"><thead><tr><th>Rank</th><th>Team</th><th>W</th><th>Pts lost</th></tr></thead><tbody>`;
