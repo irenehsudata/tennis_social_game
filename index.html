@@ -69,23 +69,62 @@
       margin: 0 0 8px;
     }
 
+    .site-gate-input-wrap {
+      position: relative;
+      margin: 4px 0 12px;
+    }
+
     .site-gate-card input {
       display: block;
       width: 100%;
       font: inherit;
       font-size: 16px;
-      padding: 10px 12px;
-      margin: 4px 0 12px;
+      padding: 10px 40px 10px 12px;
+      margin: 0;
       border-radius: 8px;
-      border: 1px solid var(--line);
+      border: none;
       background: var(--surface);
       color: var(--ink);
       box-sizing: border-box;
       text-align: center;
     }
 
-    .site-gate-card button {
+    .site-gate-enter {
+      appearance: none;
+      background: none;
+      border: none;
+      padding: 0;
+      width: 24px;
+      height: 24px;
+      position: absolute;
+      top: 50%;
+      right: 10px;
+      transform: translateY(-50%);
+      display: block;
+      cursor: pointer;
+    }
+
+    .site-gate-enter svg {
       width: 100%;
+      height: 100%;
+    }
+
+    .site-gate-transition {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--accent);
+      transform: scale(0);
+      transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 200;
+      pointer-events: none;
+    }
+
+    .site-gate-transition.expand {
+      transform: scale(var(--expand-scale, 40));
     }
 
     .page {
@@ -385,7 +424,7 @@
 
     .col-label {
       position: absolute;
-      top: 0;
+      top: 12px;
       font-size: 13px;
       font-weight: 800;
       text-transform: uppercase;
@@ -421,6 +460,7 @@
       flex-direction: column;
       gap: 1px;
       line-height: 1.3;
+      font-size: 17px;
       flex: 0 1 auto;
       min-width: 0;
       overflow: hidden;
@@ -440,6 +480,7 @@
       font-family: ui-monospace, "SF Mono", Menlo, monospace;
       font-variant-numeric: tabular-nums;
       font-size: 9px;
+      font-weight: 400;
       color: var(--ink-muted);
       background: var(--surface-alt);
       border-radius: 50%;
@@ -612,6 +653,19 @@
       border: none;
       background: transparent;
       color: #000000;
+      appearance: textfield;
+      -moz-appearance: textfield;
+    }
+
+    .rr-score::placeholder {
+      color: #000000;
+      opacity: 1;
+    }
+
+    .rr-score::-webkit-inner-spin-button,
+    .rr-score::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
     }
 
     .rr-score-view {
@@ -679,10 +733,18 @@
     <div class="site-gate-card">
       <h1 class="site-gate-title">Tennis Social Game Draw</h1>
       <p class="subnote">Enter the password to view the draw.</p>
-      <input type="password" id="site-gate-input" placeholder="Password" inputmode="numeric" />
-      <button type="button" id="site-gate-btn">Enter</button>
+      <div class="site-gate-input-wrap">
+        <input type="password" id="site-gate-input" placeholder="Password" inputmode="numeric" />
+        <button type="button" class="site-gate-enter" id="site-gate-btn" aria-label="Enter">
+          <svg viewBox="0 0 100 100" aria-hidden="true">
+            <circle cx="50" cy="50" r="48" fill="var(--accent)" />
+            <path d="M50 2 C 20 15, 15 40, 20 60 C 25 85, 55 90, 70 65 C 80 50, 90 46, 98 48" stroke="#FFFFFF" stroke-width="4" fill="none" />
+          </svg>
+        </button>
+      </div>
       <span class="unlock-error" id="site-gate-error"></span>
     </div>
+    <div class="site-gate-transition" id="site-gate-transition"></div>
   </div>
 
   <div class="page" id="page-content" hidden>
@@ -805,7 +867,21 @@
         const err = document.getElementById("site-gate-error");
         if (val === SITE_PASSWORD) {
           err.textContent = "";
-          unlockSite();
+          const btnRect = document.getElementById("site-gate-btn").getBoundingClientRect();
+          const cx = btnRect.left + btnRect.width / 2;
+          const cy = btnRect.top + btnRect.height / 2;
+          const maxDist = Math.max(
+            Math.hypot(cx, cy),
+            Math.hypot(window.innerWidth - cx, cy),
+            Math.hypot(cx, window.innerHeight - cy),
+            Math.hypot(window.innerWidth - cx, window.innerHeight - cy)
+          );
+          const transition = document.getElementById("site-gate-transition");
+          transition.style.left = (cx - 28) + "px";
+          transition.style.top = (cy - 28) + "px";
+          transition.style.setProperty("--expand-scale", (maxDist + 20) / 28);
+          transition.classList.add("expand");
+          setTimeout(unlockSite, 700);
         } else {
           err.textContent = "Wrong password.";
         }
@@ -845,7 +921,7 @@
       singles: ["Joy", "Zack", "Brian Chang", "Ares", "Light", "Evelyn", "Irene", "Sini", "Bruce", "Annie"],
     };
 
-    const BOX_W = 168, BOX_H = 80, ROW_UNIT = 92, ROUND_GAP = 56, TOP_PAD = 42;
+    const BOX_W = 168, BOX_H = 80, ROW_UNIT = 92, ROUND_GAP = 56, TOP_PAD = 39;
 
     const live = {
       doubles: { names: DEFAULTS.doubles.slice(), winners: {} },
@@ -1260,7 +1336,7 @@
         const scoreA = m ? m[1] : "", scoreB = m ? m[2] : "";
         const canEdit = unlocked && nameA && nameB;
         const scoreCell = (side, val) => canEdit
-          ? `<input class="rr-score" type="number" min="0" inputmode="numeric" data-idx="${idx}" data-side="${side}" value="${val || "0"}" />`
+          ? `<input class="rr-score" type="number" min="0" inputmode="numeric" data-idx="${idx}" data-side="${side}" placeholder="0" value="${val}" />`
           : `<span class="rr-score-view">${val || "0"}</span>`;
         boxesHtml += `<div class="rr-match" style="position:absolute;left:${col2X}px;top:${rowTop}px;width:${BOX_W}px;">
           <div class="rr-box rr-box-top">
