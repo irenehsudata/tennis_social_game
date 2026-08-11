@@ -177,6 +177,70 @@
       width: 110px;
     }
 
+    .lock-toggle {
+      appearance: none;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      color: var(--ink-muted);
+      flex-shrink: 0;
+    }
+
+    .lock-toggle svg {
+      width: 19px;
+      height: 19px;
+    }
+
+    .pin-popover {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pin-popover[hidden] {
+      display: none;
+    }
+
+    .pin-popover input[type="password"] {
+      background: none;
+      border: none;
+      border-bottom: 1px solid var(--line);
+      border-radius: 0;
+      width: 90px;
+      outline: none;
+    }
+
+    .pin-popover input[type="password"]:focus-visible {
+      outline: none;
+      border-bottom-color: var(--ink-muted);
+    }
+
+    .pin-confirm {
+      appearance: none;
+      background: none;
+      border: none;
+      padding: 0;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .pin-confirm svg {
+      width: 17px;
+      height: 17px;
+    }
+
     button {
       font: inherit;
       font-weight: 700;
@@ -663,9 +727,26 @@
     </section>
 
     <div class="unlock-bar">
-      <input type="password" id="pin-input" placeholder="PIN" inputmode="numeric" maxlength="8" />
-      <button id="unlock-btn">Unlock editing</button>
-      <button class="ghost" id="lock-btn" style="display:none;">Lock</button>
+      <button type="button" class="lock-toggle" id="lock-toggle" aria-label="Unlock editing">
+        <svg id="lock-icon-locked" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="5" y="11" width="14" height="10" rx="2" />
+          <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+        </svg>
+        <svg id="lock-icon-unlocked" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          style="display:none;">
+          <rect x="5" y="11" width="14" height="10" rx="2" />
+          <path d="M8 11V7a4 4 0 0 1 7.5-2" />
+        </svg>
+      </button>
+      <div class="pin-popover" id="pin-popover" hidden>
+        <input type="password" id="pin-input" placeholder="PIN" inputmode="numeric" maxlength="8" />
+        <button class="pin-confirm" id="pin-confirm" aria-label="Confirm PIN">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="5" y="11" width="14" height="10" rx="2" />
+            <path d="M8 11V7a4 4 0 0 1 7.5-2" />
+          </svg>
+        </button>
+      </div>
       <span class="unlock-error" id="unlock-error"></span>
     </div>
   </div>
@@ -1381,12 +1462,22 @@
     function setUnlocked(v) {
       unlocked = v;
       sessionStorage.setItem("tennisUnlocked", v ? "1" : "0");
-      document.getElementById("unlock-btn").style.display = v ? "none" : "";
-      document.getElementById("pin-input").style.display = v ? "none" : "";
-      document.getElementById("lock-btn").style.display = v ? "" : "none";
+      document.getElementById("lock-icon-locked").style.display = v ? "none" : "";
+      document.getElementById("lock-icon-unlocked").style.display = v ? "" : "none";
+      document.getElementById("lock-toggle").setAttribute("aria-label", v ? "Lock editing" : "Unlock editing");
+      document.getElementById("pin-popover").hidden = true;
       renderAll();
     }
-    document.getElementById("unlock-btn").addEventListener("click", () => {
+    document.getElementById("lock-toggle").addEventListener("click", () => {
+      if (unlocked) {
+        setUnlocked(false);
+        return;
+      }
+      const popover = document.getElementById("pin-popover");
+      popover.hidden = !popover.hidden;
+      if (!popover.hidden) document.getElementById("pin-input").focus();
+    });
+    document.getElementById("pin-confirm").addEventListener("click", () => {
       const val = document.getElementById("pin-input").value.trim();
       const err = document.getElementById("unlock-error");
       if (val === SHARED_PIN) {
@@ -1398,9 +1489,8 @@
       }
     });
     document.getElementById("pin-input").addEventListener("keydown", (e) => {
-      if (e.key === "Enter") document.getElementById("unlock-btn").click();
+      if (e.key === "Enter") document.getElementById("pin-confirm").click();
     });
-    document.getElementById("lock-btn").addEventListener("click", () => setUnlocked(false));
 
     document.getElementById("bracket-scroll-doubles").addEventListener("scroll", () =>
       updateActiveChip("round-selector-doubles", "bracket-scroll-doubles"));
