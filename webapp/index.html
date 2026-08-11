@@ -31,8 +31,54 @@
       background: var(--bg);
       color: var(--ink);
       font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      padding: 32px 24px 64px;
+      padding: 32px 24px 64px 12px;
       overflow-x: hidden;
+    }
+
+    .site-gate {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      z-index: 100;
+    }
+
+    .site-gate[hidden] {
+      display: none;
+    }
+
+    .site-gate-card {
+      max-width: 320px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .site-gate-title {
+      font-size: 22px;
+      font-weight: 800;
+      margin: 0 0 8px;
+    }
+
+    .site-gate-card input {
+      display: block;
+      width: 100%;
+      font: inherit;
+      font-size: 14px;
+      padding: 10px 12px;
+      margin: 4px 0 12px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink);
+      box-sizing: border-box;
+      text-align: center;
+    }
+
+    .site-gate-card button {
+      width: 100%;
     }
 
     .page {
@@ -139,9 +185,9 @@
       left: 50%;
       bottom: 0;
       width: 100vw;
-      margin-left: -50vw;
-      height: 1px;
-      background: var(--line);
+      margin-left: calc(-50vw + 6px);
+      height: 3px;
+      background: #E6E8EE;
       z-index: 0;
     }
 
@@ -216,12 +262,12 @@
 
     .bracket-scroll {
       overflow-x: auto;
-      padding: 10px 24px 8px;
+      padding: 10px 24px 8px 12px;
       margin-top: 14px;
       width: 100vw;
       position: relative;
       left: 50%;
-      margin-left: -50vw;
+      margin-left: calc(-50vw + 6px);
       background: #14291A;
     }
 
@@ -251,12 +297,12 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      border: 1px solid var(--line);
+      border: none;
       background: var(--surface);
       color: #000000;
       border-radius: 8px;
       padding: 0 12px;
-      font-size: 13px;
+      font-size: 14px;
       white-space: nowrap;
       overflow: hidden;
     }
@@ -272,12 +318,12 @@
     .game-tag {
       font-family: ui-monospace, "SF Mono", Menlo, monospace;
       font-variant-numeric: tabular-nums;
-      font-size: 10px;
+      font-size: 9px;
       color: var(--ink-muted);
       background: var(--surface-alt);
       border-radius: 50%;
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -286,23 +332,20 @@
       flex-shrink: 0;
     }
 
-    .rr-row .game-tag {
-      font-size: 14px;
-      width: 26px;
-      height: 26px;
-    }
-
     .slot.tbd {
       color: var(--ink-muted);
       font-style: italic;
-      border-style: dashed;
       justify-content: center;
+    }
+
+    .tbd-text {
+      color: var(--ink-muted);
+      font-style: italic;
     }
 
     .slot.bye {
       color: var(--bye);
       background: var(--bye-bg);
-      border-color: transparent;
       justify-content: center;
       font-weight: 700;
       font-size: 11px;
@@ -371,13 +414,13 @@
       background: #12321C;
       border: none;
       border-radius: 0;
-      padding: 16px 24px 20px;
+      padding: 16px 24px 20px 12px;
       margin-top: 0;
       max-width: none;
       width: 100vw;
       position: relative;
       left: 50%;
-      margin-left: -50vw;
+      margin-left: calc(-50vw + 6px);
     }
 
     .rr-title {
@@ -389,18 +432,39 @@
       margin: 0 0 12px;
     }
 
-    .rr-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 12px;
-      border-bottom: 1px solid #FFFFFF;
-      font-size: 14px;
-      color: #FFFFFF;
+    .rr-match {
+      margin-bottom: 10px;
     }
 
-    .rr-row:last-of-type {
-      border-bottom: none;
+    .rr-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      width: 168px;
+      height: 40px;
+      padding: 0 12px;
+      font-size: 14px;
+      background: var(--surface);
+      color: #000000;
+      box-sizing: border-box;
+    }
+
+    .rr-name-group {
+      display: flex;
+      align-items: center;
+      flex: 1 1 auto;
+      gap: 6px;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .rr-box-top {
+      border-radius: 8px 8px 0 0;
+    }
+
+    .rr-box-bottom {
+      border-radius: 0 0 8px 8px;
     }
 
     .rr-team {
@@ -412,34 +476,24 @@
       white-space: nowrap;
     }
 
-    .rr-team:last-child {
-      text-align: right;
-    }
-
     .rr-score,
     .rr-score-view {
       width: 40px;
       flex: 0 0 auto;
-      text-align: center;
+      text-align: right;
       font: inherit;
       font-variant-numeric: tabular-nums;
     }
 
     .rr-score {
-      padding: 4px 2px;
+      padding: 0;
       border: none;
-      border-radius: 6px;
       background: transparent;
-      color: #FFFFFF;
+      color: #000000;
     }
 
     .rr-score-view {
-      color: #FFFFFF;
-    }
-
-    .rr-dash {
-      color: #FFFFFF;
-      flex: 0 0 auto;
+      color: #000000;
     }
 
     .rr-standings {
@@ -457,13 +511,13 @@
       font-variant-numeric: tabular-nums;
     }
 
-    .rr-standings th:not(:nth-child(2)),
-    .rr-standings td:not(:nth-child(2)) {
+    .rr-standings th:not(:nth-child(1)):not(:nth-child(2)),
+    .rr-standings td:not(:nth-child(1)):not(:nth-child(2)) {
       text-align: center;
     }
 
     .rr-standings thead th {
-      font-size: 11px;
+      font-size: 13px;
       text-transform: uppercase;
       letter-spacing: 0.03em;
       color: #FFFFFF;
@@ -476,16 +530,6 @@
 
     .rr-standings tbody tr:last-child {
       border-bottom: none;
-    }
-
-    .rr-standings tr.advancing {
-      font-weight: 700;
-      color: #FFFFFF;
-    }
-
-    .rr-standings tr.advancing td:nth-child(2)::after {
-      content: " →";
-      color: var(--accent);
     }
 
     @media (prefers-reduced-motion: no-preference) {
@@ -508,7 +552,17 @@
 
 <body>
 
-  <div class="page">
+  <div class="site-gate" id="site-gate">
+    <div class="site-gate-card">
+      <h1 class="site-gate-title">Tennis Social Game Draw</h1>
+      <p class="subnote">Enter the password to view the draw.</p>
+      <input type="password" id="site-gate-input" placeholder="Password" inputmode="numeric" />
+      <button type="button" id="site-gate-btn">Enter</button>
+      <span class="unlock-error" id="site-gate-error"></span>
+    </div>
+  </div>
+
+  <div class="page" id="page-content" hidden>
     <header class="top" style="margin-bottom: 20px;">
       <h1>Tennis Social Game Draw</h1>
       <h4 style="flex-basis: 100%; margin: 0; font-weight: 400;">📍 Poplar Recreation Ground Tennis Court</h4>
@@ -569,6 +623,33 @@
     import {
       getFirestore, doc, onSnapshot, updateDoc, deleteField
     } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+    // ---- Site-wide password gate ----
+    const SITE_PASSWORD = "2026";
+    const siteGate = document.getElementById("site-gate");
+    const pageContent = document.getElementById("page-content");
+    function unlockSite() {
+      sessionStorage.setItem("siteUnlocked", "1");
+      siteGate.hidden = true;
+      pageContent.hidden = false;
+    }
+    if (sessionStorage.getItem("siteUnlocked") === "1") {
+      unlockSite();
+    } else {
+      document.getElementById("site-gate-btn").addEventListener("click", () => {
+        const val = document.getElementById("site-gate-input").value.trim();
+        const err = document.getElementById("site-gate-error");
+        if (val === SITE_PASSWORD) {
+          err.textContent = "";
+          unlockSite();
+        } else {
+          err.textContent = "Wrong password.";
+        }
+      });
+      document.getElementById("site-gate-input").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") document.getElementById("site-gate-btn").click();
+      });
+    }
 
     // ---- Firebase project config ----
     // Paste the values from Firebase Console > Project settings > General > Your apps > Web app.
@@ -850,14 +931,14 @@
       // two physical slots each prelim match lands in follows its own locked order.
       let prelimY = null;
       if (prelim) {
-        const parentY = y[0][prelimInto];
-        const slots = [parentY - ROW_UNIT / 2, parentY + ROW_UNIT / 2];
+        const slots = [TOP_PAD + BOX_H / 2, TOP_PAD + BOX_H / 2 + ROW_UNIT];
         const prelimRowOf = GAME_ORDER.singlesPrelim.rowOf;
         prelimY = prelim.map((_, i) => slots[prelimRowOf[i]]);
       }
 
       const colX = (r) => (r + colOffset) * (BOX_W + ROUND_GAP);
-      const totalWidth = colX(rounds.length - 1) + BOX_W;
+      const scrollerWidthSingles = document.getElementById("bracket-scroll-singles").clientWidth || window.innerWidth;
+      const totalWidth = colX(rounds.length - 1) + BOX_W + Math.max(0, scrollerWidthSingles - BOX_W);
 
       const allCenters = [];
       y.forEach((round) => allCenters.push(...round));
@@ -886,9 +967,11 @@
         prelim.forEach((match, i) => renderMatchBoxes("p", i, prelimX, prelimY[i], match, GAME_ORDER.singlesPrelim.gameOf[i]));
         const xChild = prelimX + BOX_W, xMid = xChild + ROUND_GAP / 2, xParent = colX(0);
         const parentY = y[0][prelimInto];
+        const midTop = Math.min(prelimY[0], prelimY[1], parentY);
+        const midBottom = Math.max(prelimY[0], prelimY[1], parentY);
         lines += `<line x1="${xChild}" y1="${prelimY[0]}" x2="${xMid}" y2="${prelimY[0]}"/>`;
         lines += `<line x1="${xChild}" y1="${prelimY[1]}" x2="${xMid}" y2="${prelimY[1]}"/>`;
-        lines += `<line x1="${xMid}" y1="${prelimY[0]}" x2="${xMid}" y2="${prelimY[1]}"/>`;
+        lines += `<line x1="${xMid}" y1="${midTop}" x2="${xMid}" y2="${midBottom}"/>`;
         lines += `<line x1="${xMid}" y1="${parentY}" x2="${xParent}" y2="${parentY}"/>`;
       }
 
@@ -949,7 +1032,8 @@
       // The middle row position, independent of which match landed there after
       // reordering — Final isn't a fixed pair of Round-2 slots, so it just sits centered.
       const finalY = TOP_PAD + Math.floor((matches.length - 1) / 2) * ROW_UNIT + BOX_H / 2;
-      const totalWidth = finalX + BOX_W;
+      const scrollerWidthDoubles = document.getElementById("bracket-scroll-doubles").clientWidth || window.innerWidth;
+      const totalWidth = finalX + BOX_W + Math.max(0, scrollerWidthDoubles - BOX_W);
 
       function colX(n) { return n * (BOX_W + ROUND_GAP); }
 
@@ -1049,7 +1133,7 @@
     // Champion live, so this card sticks to just Round 2's own results.
     function renderDoublesStage2(teams, winners, standings) {
       const container = document.getElementById("doubles-stage2");
-      const { stats, order, allDecided } = standings;
+      const { stats, order } = standings;
       const rrRowOf = GAME_ORDER.doublesRoundRobin.rowOf;
       const rrGameOf = GAME_ORDER.doublesRoundRobin.gameOf;
       const rowsByOrder = RR_PAIRS.map((pair, idx) => ({ pair, idx })).sort((x, y) => rrRowOf[x.idx] - rrRowOf[y.idx]);
@@ -1063,23 +1147,29 @@
         const canEdit = unlocked && nameA && nameB;
         const scoreCell = (side, val) => canEdit
           ? `<input class="rr-score" type="number" min="0" inputmode="numeric" data-idx="${idx}" data-side="${side}" value="${val}" />`
-          : `<span class="rr-score-view">${val || "–"}</span>`;
-        html += `<div class="rr-row">
-          <span class="game-tag">G${rrGameOf[idx]}</span>
-          <span class="rr-team">${nameA ? escapeHtml(nameA) : "TBD"}</span>
-          ${scoreCell("a", scoreA)}
-          <span class="rr-dash">–</span>
-          ${scoreCell("b", scoreB)}
-          <span class="rr-team">${nameB ? escapeHtml(nameB) : "TBD"}</span>
+          : `<span class="rr-score-view">${val || "0"}</span>`;
+        html += `<div class="rr-match">
+          <div class="rr-box rr-box-top">
+            <span class="rr-name-group">
+              <span class="rr-team">${nameA ? escapeHtml(nameA) : '<span class="tbd-text">TBD</span>'}</span>
+              <span class="game-tag">G${rrGameOf[idx]}</span>
+            </span>
+            ${scoreCell("a", scoreA)}
+          </div>
+          <div class="rr-box rr-box-bottom">
+            <span class="rr-name-group">
+              <span class="rr-team">${nameB ? escapeHtml(nameB) : '<span class="tbd-text">TBD</span>'}</span>
+            </span>
+            ${scoreCell("b", scoreB)}
+          </div>
         </div>`;
       });
       html += `<table class="rr-standings"><thead><tr><th>Rank</th><th>Team</th><th>W</th><th>Pts lost</th></tr></thead><tbody>`;
       order.forEach((idx, rank) => {
         const name = teams[idx];
-        const advancing = allDecided && rank < 2 && name;
-        html += `<tr class="${advancing ? "advancing" : ""}">
+        html += `<tr>
           <td>${rank + 1}</td>
-          <td>${name ? escapeHtml(name) : "TBD"}</td>
+          <td>${name ? escapeHtml(name) : '<span class="tbd-text">TBD</span>'}</td>
           <td>${name ? stats[idx].wins : "–"}</td>
           <td>${name ? stats[idx].pointsLost : "–"}</td>
         </tr>`;
@@ -1206,8 +1296,17 @@
     // ---- Tabs ----
     const tabIndicator = document.getElementById("tab-indicator");
     function moveTabIndicator(tab) {
-      tabIndicator.style.left = tab.offsetLeft + "px";
-      tabIndicator.style.width = tab.offsetWidth + "px";
+      const tabs = [...document.querySelectorAll(".tab")];
+      const i = tabs.indexOf(tab);
+      const edgeExtend = 12;
+      const left = i === 0
+        ? -edgeExtend
+        : (tabs[i - 1].offsetLeft + tabs[i - 1].offsetWidth + tab.offsetLeft) / 2;
+      const right = i === tabs.length - 1
+        ? tab.offsetLeft + tab.offsetWidth
+        : (tab.offsetLeft + tab.offsetWidth + tabs[i + 1].offsetLeft) / 2;
+      tabIndicator.style.left = left + "px";
+      tabIndicator.style.width = (right - left) + "px";
     }
     document.querySelectorAll(".tab").forEach((tab) => {
       tab.addEventListener("click", () => {
